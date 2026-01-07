@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "resultat.h"
-#include "interface.h"
+#include "modele.h"
+#include "affichage.h"
+#include "storage.h"
 
 int main() {
     // Variable pour stocker notre base de données en mémoire
-    t_resultat monCatalogue = NULL;
+    t_catalogue monCatalogue = NULL;
     int choix = 0;
 
     // Boucle principale
@@ -35,7 +36,7 @@ int main() {
 
     // NETTOYAGE FINAL
     if (monCatalogue != NULL) {
-        freeResultat(monCatalogue);
+        freeCatalogue(monCatalogue);
     }
 
     return 0;
