@@ -1,43 +1,62 @@
+/**
+ * Module modele - modele.h
+ *
+ * Par : Corentin Couëron
+ * Date : 07-01-2026
+ * Description : Le module modele définit les structures de données,
+ *               tels que le media qui contient les informations d'un media
+ *               et le catalogue qui contient une liste de medias.
+ *               Il fournit également des fonctions pour créer, accéder, setter
+ *               et libérer ces structures.
+**/
+
 #ifndef MODELE_H
 #define MODELE_H
 
+
+/* LIBRARY ================================================================ */
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
 
-// Declaration de la structure Media
+/* DECLARATION STRUCTURES ================================================= */
 typedef struct media* t_media;
 typedef struct catalogue* t_catalogue;
 
-// Constructeur de Media
+/* CONSTRUCTEUR =========================================================== */
 t_media creer_media(void);
 t_catalogue creer_catalogue(void);
 
-// Getters (Pour accéder aux valeurs)
-char* getCode(t_media media);
-char* getType(t_media media);
-char* getTitre(t_media media);
-int getAnnee(t_media media);
-float getDuree(t_media media);
-char* getAuteur(t_media media);
+/* GETTERS ================================================================ */
+char* getCode(t_media media);       // Ex: "MOV001"
+char* getType(t_media media);       // Ex: "Film", "Serie", etc.
+char* getTitre(t_media media);      // Ex: "Inception"
+int getAnnee(t_media media);        // Ex: 2010
+int getDuree(t_media media);        // Ex: 148 (minutes)
+char* getAuteur(t_media media);     // Ex: "Christopher Nolan"
 
-int get_nb_media(t_catalogue catalogue);
-t_media get_media_catalogue(t_catalogue catalogue, int index);
+int getNbMedia(t_catalogue catalogue);    // Nombre de medias dans le catalogue
 
-// Setter (Pour modifier les valeurs)
+t_media getMediaCatalogue(t_catalogue catalogue, int index);  // Accès à un media par index
+
+/* SETTERS ================================================================ */
 void setCode(t_media media, char* nouveauCode);
 void setType(t_media media, char* nouveauType);
 void setTitre(t_media media, char* nouveauTitre);
 void setAnnee(t_media media, int nouvelleAnnee);
-void setDuree(t_media media, float nouvelleDuree);
+void setDuree(t_media media, int nouvelleDuree);
 void setAuteur(t_media media, char* nouvelAuteur);
-void setNbMedia(t_catalogue catalogue, int nouveauNbMedia);
-void setMediaCatalogue(t_catalogue catalogue, t_media media, int index);
 
-// Alloue la mémoire pour le tableau de pointeurs dans resultat
-void allouerTableauMedia(t_catalogue catalogue, int taille_max);
-// Destructeur de Media
+void setNbMedia(t_catalogue catalogue, int nouveauNbMedia);
+void setMediaCatalogue(t_catalogue catalogue, t_media media, int index);    // Stocke un media à l'index donné
+
+/* MÉMOIRE ================================================================ */
+void allouerTableauMedia(t_catalogue catalogue, int taille_max);    // Alloue le tableau de medias dans le catalogue
+
+/* DESTRUCTEUR ============================================================ */
 void freeMedia(t_media media);
 void freeCatalogue(t_catalogue catalogue);
+
+
 #endif
