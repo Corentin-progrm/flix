@@ -16,4 +16,6 @@ t_catalogue chargerBaseDeDonnees(void);
 // Utilitaire
 int fichierExiste(char *chemin);
 
+void lancerVideo(t_media media);
+
 #endif

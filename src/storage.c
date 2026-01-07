@@ -34,7 +34,7 @@ t_catalogue chargerBaseDeDonnees(void) {
     int compteur = 0;
     char cheminVideo[100];
 
-    printf("Chargement du catalogue en cours...\n");
+    printf("[*] Chargement du catalogue en cours...\n");
 
     // 4. Lecture ligne par ligne
     while (compteur < max_taille && fgets(ligne, sizeof(ligne), fichier)) {
@@ -68,7 +68,7 @@ t_catalogue chargerBaseDeDonnees(void) {
                 
             } else {
                 // On garde quand même ce message, c'est utile pour l'utilisateur
-                printf(" -> [INFO] Video manquante pour : %s (Ignore)\n", tTitre);
+                printf("[*] Video manquante pour : %s (Ignore)\n", tTitre);
             }
         }
     }
@@ -77,6 +77,17 @@ t_catalogue chargerBaseDeDonnees(void) {
     setNbMedia(catalogue, compteur);
     fclose(fichier);
     
-    printf("Termine : %d films charges avec succes.\n", compteur);
     return catalogue;
+}
+
+void lancerVideo(t_media media) {
+    if (media == NULL) return;
+
+    char commande[256];
+    
+    sprintf(commande, "start assets/%s.mp4", getCode(media));
+    
+    printf("[*] Lancement de : %s ...\n", getTitre(media));
+    
+    system(commande);
 }

@@ -3,12 +3,15 @@
 
 #include "modele.h"
 
+// Affiche l'acceuil du programme
+void afficherAccueil(t_catalogue catalogue);
+
+// Affichage detaille d'un media
+void afficherMedia(t_media media);
+
 // Affiche le menu et retourne le choix de l'utilisateur
-int afficherMenu(void);
-
-// Reçoit la structure remplie et l'affiche proprement à l'écran
-void afficherCatalogue(t_catalogue catalogue);
-
+int afficherMenuAcceuil(void);
+int afficherMenuMedia(void);
 
 
 #endif
