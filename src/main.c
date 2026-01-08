@@ -1,40 +1,65 @@
+/**
+ * Module main - main.c
+ *
+ * Par : Corentin Couëron
+ * Date : 07-01-2026
+ * Description : Le module main est le point d'entrée du programme.
+**/
+
+/* LIBRARY ================================================================ */
 #include <stdio.h>
 #include <stdlib.h>
 #include "modele.h"
 #include "affichage.h"
 #include "storage.h"
 
+/* DEFINITION DES FONCTIONS =============================================== */
+
+/**
+ * @fonction main()
+ * @brief Point d'entrée du programme.
+ * @return int Code de sortie du programme.
+ */
 int main() {
 
-    int choix = 1;      // a 1 pour eviter le exit direct
-    t_catalogue catalogue = NULL;   // on declare le catalogue
+    int choix = 1;                      // Initialisation du choix de l'utilisateur
+    t_catalogue catalogue = NULL;       // Declaration du catalogue
 
+    // Tant que l'utilisateur ne choisit pas de quitter
     do
     {
+        // Si le catalogue n'est pas encore chargé
         if (catalogue == NULL) {
-            catalogue = chargerBaseDeDonnees();     // si le catalogue est vide, on charge la base de donnee dedans
+            catalogue = chargerBaseDeDonnees();
         }
 
-        afficherAccueil(catalogue);    // on affiche le catalogue
+        afficherAccueil(catalogue);         // On affiche l'acceuil
 
-        choix = afficherMenuAcceuil();     // on affiche le menu en premier
+        choix = afficherMenuAcceuil();      // On affiche le menu acceuil
 
-        int nb_total_film = get_nb_media(catalogue);        // on recupere le nombre total de films
-        int indexFilm = -1;                                 // index du film a lancer
+        int nb_total_film = get_nb_media(catalogue);        // Nombre total de films dans le catalogue
+        int indexFilm = -1;                                 // Index du film choisi
 
+        // Si l'utilisateur a choisi un film valide
         if (catalogue != NULL && nb_total_film > 0) {
+
+            // On vérifie que le choix est dans la plage valide
             if (choix >= 1 && choix <= nb_total_film) {
-                indexFilm = choix -1;                       // on ajuste l'index
+                
+                indexFilm = choix -1;                                       // On calcule l'index du film
 
-                afficherMedia(get_media_catalogue(catalogue, indexFilm));                     // on affiche le menu media
+                afficherMedia(get_media_catalogue(catalogue, indexFilm));   // On affiche les détails du media choisi
 
-                choix = afficherMenuMedia();                                    // on affiche le menu media
+                choix = afficherMenuMedia();                                // On affiche le menu media
 
+                // Si l'utilisateur choisit de lancer le media
                 if (choix == 1) {
-                    t_media media_a_lancer = get_media_catalogue(catalogue, indexFilm);
-                    lancerVideo(media_a_lancer);     // on lance la video
+
+                    t_media media_a_lancer = get_media_catalogue(catalogue, indexFilm); // On récupère le media à lancer
+                    lancerVideo(media_a_lancer);                                        // On lance le media
+
                 } else {
-                    continue;   // retour au menu accueil
+                    continue;   // Retour au menu acceuil
                 }
                 
             }

@@ -30,7 +30,26 @@ int fichierExiste(char *chemin) {
         fclose(f);
         return 1;
     }
+    
     return 0;
+}
+
+/**
+ * @fonction lancerVideo()
+ * @brief Lance la vidéo associée au media.
+ * @param  media    Le media dont on veut lancer la vidéo.
+ */
+void lancerVideo(t_media media) {
+
+    if (media == NULL) return;  // Verification media valide
+
+    char commande[256];         // Buffer pour la commande système
+    
+    sprintf(commande, "start assets/%s.mp4", getCode(media));   //
+    
+    printf("[*] Lancement de : %s ...\n", getTitre(media));
+    
+    system(commande);
 }
 
 /**
@@ -76,6 +95,7 @@ t_catalogue chargerBaseDeDonnees(void) {
             // On vérifie si la vidéo existe réellement
             if (fichierExiste(cheminVideo)) {
                 
+                // Création et remplissage du media
                 t_media m = creer_media();
                 setCode(m, tCode);
                 setType(m, tType);
@@ -89,27 +109,15 @@ t_catalogue chargerBaseDeDonnees(void) {
                 compteur++;
                 
             } else {
-                // On garde quand même ce message, c'est utile pour l'utilisateur
-                printf("[*] Video manquante pour : %s (Ignore)\n", tTitre);
+                printf("[ERREUR] Video manquante pour : %s (Ignore)\n", tTitre); // Log si video manquante
             }
         }
     }
 
-    // 5. Finalisation
+    // On met à jour le nombre de medias dans le catalogue
     setNbMedia(catalogue, compteur);
     fclose(fichier);
     
     return catalogue;
 }
 
-void lancerVideo(t_media media) {
-    if (media == NULL) return;
-
-    char commande[256];
-    
-    sprintf(commande, "start assets/%s.mp4", getCode(media));
-    
-    printf("[*] Lancement de : %s ...\n", getTitre(media));
-    
-    system(commande);
-}

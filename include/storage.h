@@ -21,7 +21,6 @@
 
 /* DECLARATION DES FONCTIONS ============================================== */
 
-
 // Charge le fichier texte, vérifie les .mp4, et retourne TOUTE la structure remplie
 t_catalogue chargerBaseDeDonnees(void);
 
