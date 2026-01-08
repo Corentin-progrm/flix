@@ -76,14 +76,14 @@ void afficherAccueil(t_catalogue catalogue) {
     // Verification que le catalogue n'est pas vide
     if (catalogue == NULL) return;
 
-    int nb_total_media = get_nb_media(catalogue);   // On recupere le nombre total de medias
+    int nb_total_media = getNbMedia(catalogue);   // On recupere le nombre total de medias
 
     printf("\n============================ CATALOGUE (%d films) ============================\n", nb_total_media);
     
     // Pour tous les medias du catalogue
     for (int i = 0; i < nb_total_media; i++) {
         // On récupère le film numéro i
-        t_media m = get_media_catalogue(catalogue, i);
+        t_media m = getMediaCatalogue(catalogue, i);
 
         // On affiche ses infos via les getters
         printf("| [%d] | %-8s, %4d\n", 
@@ -107,8 +107,8 @@ void afficherMedia(t_media media) {
 
     printf("======= %s =======\n", getTitre(media));
     printf("\n");
-    printf("| Code: %-8s\n |", getCode(media));
-    printf("| Type: %-8s\n |", getType(media));
+    printf("| Code: %s\n", getCode(media));
+    printf("| Type: %s\n", getType(media));
     printf("| Annee de sortie: %d\n", getAnnee(media));
     printf("| Duree: %d minutes\n", getDuree(media));
     printf("| Auteur: %s\n", getAuteur(media));

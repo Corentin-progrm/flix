@@ -37,7 +37,7 @@ int main() {
 
         choix = afficherMenuAcceuil();      // On affiche le menu acceuil
 
-        int nb_total_film = get_nb_media(catalogue);        // Nombre total de films dans le catalogue
+        int nb_total_film = getNbMedia(catalogue);        // Nombre total de films dans le catalogue
         int indexFilm = -1;                                 // Index du film choisi
 
         // Si l'utilisateur a choisi un film valide
@@ -48,14 +48,14 @@ int main() {
                 
                 indexFilm = choix -1;                                       // On calcule l'index du film
 
-                afficherMedia(get_media_catalogue(catalogue, indexFilm));   // On affiche les détails du media choisi
+                afficherMedia(getMediaCatalogue(catalogue, indexFilm));   // On affiche les détails du media choisi
 
                 choix = afficherMenuMedia();                                // On affiche le menu media
 
                 // Si l'utilisateur choisit de lancer le media
                 if (choix == 1) {
 
-                    t_media media_a_lancer = get_media_catalogue(catalogue, indexFilm); // On récupère le media à lancer
+                    t_media media_a_lancer = getMediaCatalogue(catalogue, indexFilm); // On récupère le media à lancer
                     lancerVideo(media_a_lancer);                                        // On lance le media
 
                 } else {
