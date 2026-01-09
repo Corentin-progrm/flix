@@ -16,143 +16,160 @@
 
 /* DEFINITION DES FONCTIONS =============================================== */
 
-int main() {
+/**
+ * Module main - main.c
+ * Par : Corentin Couëron
+ */
+
+
+int main(void)
+{
+    // 1. Initialisation de la fenêtre (Taille plus grande pour la grille)
+    initInterface(1024, 768, "NounaFlix");
+
+    // 2. Animation de démarrage (Bloque le programme tant que pas fini)
+    animLogoStart();
+
+    // 3. Chargement des données APRES l'animation
+    // Cela permet une transition fluide vers le menu
     t_catalogue catalogue = chargerBaseDeDonnees();
-    initInterface(800, 600, "Netflix Perso - Mouse Edition");
+    chargerTexturesCatalogue(catalogue); // Charge les images
 
-    while (!WindowShouldClose()) {
-
-        // --- DESSIN & LOGIQUE EN MÊME TEMPS ---
+    // 4. Boucle Principale (Grille des films)
+    while (!WindowShouldClose()) 
+    {
         BeginDrawing();
-            ClearBackground(RAYWHITE);
             
-            // 1. Le titre et le fond
+            ClearBackground(RAYWHITE); 
             dessinerFondMenu();
 
-            // 2. Bouton QUITTER (En haut à droite)
-            // Rectangle : x=650, y=20, largeur=130, hauteur=40
-            Rectangle rectQuitter = {650, 20, 130, 40};
-            if (dessinerBouton(rectQuitter, "QUITTER", LIGHTGRAY)) {
-                break; // Sort de la boucle -> Ferme le programme
-            }
-
-            // 3. Bouton RECHERCHER (À côté)
-            Rectangle rectSearch = {500, 20, 130, 40};
-            if (dessinerBouton(rectSearch, "RECHERCHE", LIGHTGRAY)) {
-                // Pour l'instant on met juste un message console, 
-                // on fera la fenêtre de recherche plus tard
-                printf("Clic sur Recherche !\n");
-            }
-
-            // 4. LISTE DES FILMS CLIQUABLE
-            int y = 100;
+            // --- Logique de la Grille ---
             int nbFilms = getNbMedia(catalogue);
+            int startX = 40;
+            int startY = 100;
+            
+            // Calcul du nombre de colonnes dynamique
+            int largeurFenetre = GetScreenWidth();
+            int espaceTotalCarte = CARTE_LARGEUR + CARTE_PADDING;
+            int colonnesMax = (largeurFenetre - (startX * 2)) / espaceTotalCarte;
+            if (colonnesMax < 1) colonnesMax = 1;
 
+            // Affichage de chaque film
             for (int i = 0; i < nbFilms; i++) {
                 t_media m = getMediaCatalogue(catalogue, i);
                 
-                // On crée un rectangle pour chaque ligne de film
-                // Il prend toute la largeur de l'écran
-                Rectangle rectFilm = {20, y, 760, 30};
-                
-                // Astuce : On utilise notre fonction bouton mais avec une couleur transparente (BLANK)
-                // ou un gris très clair pour faire joli.
-                // Le texte du bouton sera le titre du film.
-                char titreComplet[100];
-                sprintf(titreComplet, "%s (%d)", getTitre(m), getAnnee(m));
+                int colonne = i % colonnesMax;
+                int ligne = i / colonnesMax;
 
-                // Si on clique sur le film...
-                if (dessinerBouton(rectFilm, titreComplet, RAYWHITE)) {
-                    printf("Lancement de : %s\n", getTitre(m));
-                    lancerVideo(m);
+                Rectangle rectCarte;
+                rectCarte.x = (float)(startX + colonne * espaceTotalCarte);
+                rectCarte.y = (float)(startY + ligne * (CARTE_HAUTEUR + CARTE_PADDING));
+                rectCarte.width = (float)CARTE_LARGEUR;
+                rectCarte.height = (float)CARTE_HAUTEUR;
+
+                // On dessine la carte et on vérifie le clic en même temps
+                // (On verifie que mesTextures n'est pas NULL par sécurité)
+                if (mesTextures != NULL) {
+                    if (dessinerCarteMedia(rectCarte, m, mesTextures[i])) {
+                        printf("Lancement du film : %s\n", getTitre(m));
+                        lancerVideo(m);
+                    }
                 }
-
-                y += 35; // Espace entre les lignes
             }
 
         EndDrawing();
     }
 
-    fermerInterface();
+    // 5. Nettoyage
+    libererTexturesCatalogue();
     freeCatalogue(catalogue);
+    fermerInterface();
+
     return 0;
 }
+
+
+
 
 
 /*
 
-int main() {
+int main(void) {
+    // 1. Chargement des données
+    t_catalogue catalogue = chargerBaseDeDonnees();
+    
+    // 2. Initialisation de la fenêtre (Largeur, Hauteur, Titre)
+    initInterface(1024, 768, "Netflix Perso - Grid Edition");
 
-    int etatExit = 0;                                   // Etat de sortie du programme
-    char saisieUtilisateur[50];                         // Varible de saisie utilisateur
-    t_catalogue catalogue = chargerBaseDeDonnees();     // Chargement du catalogue
+    // 3. Chargement des images (Textures)
+    // IMPORTANT : Doit être fait APRES initInterface() car OpenGL doit être prêt
+    chargerTexturesCatalogue(catalogue);
 
-    while(etatExit == 0) {
+    // 4. Boucle principale
+    while (!WindowShouldClose()) {
 
-        system("cls");                          // Nettoie l'écran (Windows)
-
-        afficherBaniere();
-
-        afficherCatalogue(catalogue);
-
-        afficherMenuAcceuil();
-        scanf("%s", saisieUtilisateur);
-
-        mettreEnMinuscule(saisieUtilisateur);
-
-        // Verification de Exit
-        if (strcmp(saisieUtilisateur, "q") == 0) {
-            etatExit = 1;                           // On quitte la boucle
-        }
-
-        // Verification de Recherche
-        else if (strcmp(saisieUtilisateur, "r") == 0) {
-            system("cls");                          // Nettoie l'écran (Windows)
-            afficherBaniere();                      // Affiche la baniere
-
-            rechercherFilmParTitre(catalogue);      // Rechercher et afficher les films
-
-            afficherMenuRecherche();                // Affiche le menu recherche
-
-            int choixUserRecherche = 0;              // Initialisation du choix de l'utilisateur
-            scanf("%d", &choixUserRecherche);
+        // --- DESSIN ---
+        BeginDrawing();
             
-        }        
+            ClearBackground(RAYWHITE);
+            
+            // Affiche le titre "NETFLIX PERSO"
+            dessinerFondMenu();
 
-        // Verification du choix d'un Media
-        else if (estNumerique(saisieUtilisateur)) {
-            int choixUserMedia = convertirEnEntier(saisieUtilisateur);
-            int nbTotalMedia = getNbMedia(catalogue);
+            // --- LOGIQUE DE LA GRILLE ---
+            int nbFilms = getNbMedia(catalogue);
+            
+            // Paramètres de positionnement
+            int startX = 40;
+            int startY = 100;
+            
+            // Calcul dynamique des colonnes selon la largeur de la fenêtre
+            // (Evite que ça déborde si tu changes la taille de fenêtre)
+            int largeurFenetre = GetScreenWidth();
+            int espaceTotalCarte = CARTE_LARGEUR + CARTE_PADDING;
+            
+            // Combien de cartes tiennent en largeur ?
+            int colonnesMax = (largeurFenetre - (startX * 2)) / espaceTotalCarte;
+            
+            // Sécurité : au moins 1 colonne pour éviter la division par zéro
+            if (colonnesMax < 1) colonnesMax = 1;
 
-            if (choixUserMedia > 0 && choixUserMedia <= nbTotalMedia) {
-                system("cls");                                                      // Nettoie l'écran (Windows)
-                afficherBaniere();                                                  // Affiche la baniere
+            // Boucle d'affichage des films
+            for (int i = 0; i < nbFilms; i++) {
+                t_media m = getMediaCatalogue(catalogue, i);
+                
+                // Calcul mathématique de la position (Ligne / Colonne)
+                int colonne = i % colonnesMax;
+                int ligne = i / colonnesMax;
 
-                int indexMedia = choixUserMedia -1;                          // On calcule l'index du film
+                // Création du rectangle de la carte
+                Rectangle rectCarte;
+                rectCarte.x = (float)(startX + colonne * espaceTotalCarte);
+                rectCarte.y = (float)(startY + ligne * (CARTE_HAUTEUR + CARTE_PADDING));
+                rectCarte.width = (float)CARTE_LARGEUR;
+                rectCarte.height = (float)CARTE_HAUTEUR;
 
-                afficherMedia(getMediaCatalogue(catalogue, indexMedia));            // On affiche les détails du media choisi
-
-                afficherMenuMedia();                                                // On affiche le menu media
-
-                int choixUserMediaLancer = 0;                                          // Initialisation du choix de l'utilisateur7
-
-                scanf("%d", &choixUserMediaLancer);
-
-                if (choixUserMediaLancer == 1) {
-                    t_media media_a_lancer = getMediaCatalogue(catalogue, indexMedia);  // On récupère le media à lancer
-                    lancerVideo(media_a_lancer);  
-                } else {
-                    continue;
+                // --- AFFICHAGE DU WIDGET ---
+                // On vérifie que les textures existent bien avant de les utiliser
+                if (mesTextures != NULL) {
+                    if (dessinerCarteMedia(rectCarte, m, mesTextures[i])) {
+                        printf("Clic sur le film : %s\n", getTitre(m));
+                        lancerVideo(m);
+                    }
                 }
             }
-        }
+
+        EndDrawing();
     }
 
-    freeCatalogue(catalogue);    // Libération de la mémoire
-
-    printf("[*] Fermeture...\n");
-
+    // 5. Nettoyage final
+    libererTexturesCatalogue(); // Décharge les images de la carte graphique
+    fermerInterface();          // Ferme la fenêtre Raylib
+    freeCatalogue(catalogue);   // Vide la mémoire du catalogue
+    
     return 0;
 }
+
+
 
 */

@@ -37,16 +37,33 @@ void rechercherFilmParTitre(t_catalogue catalogue);
 
 /* INTERFACE GRAPHIQUE ==================================================== */
 
+// Dimensions des cartes (Tu pourras changer ça plus tard)
+#define CARTE_LARGEUR 160
+#define CARTE_HAUTEUR 220
+#define CARTE_PADDING 20 // Espace entre les cartes
+
+extern Texture2D* mesTextures;
+
 void initInterface(int largeur, int hauteur, char* titre);
 void fermerInterface(void);
 
-// Affiche un bouton et renvoie 1 (true) s'il est cliqué
-int dessinerBouton(Rectangle rect, char* texte, Color couleurBase);
+// NOUVEAU : Charge toutes les images correspondant au catalogue en mémoire graphique
+void chargerTexturesCatalogue(t_catalogue catalogue);
 
-// On garde ta fonction principale, mais elle ne prendra plus rien en paramètre pour l'instant
-// car c'est le main qui va orchestrer les boutons.
+// NOUVEAU : Libère la mémoire graphique à la fin
+void libererTexturesCatalogue(void);
+
 void dessinerFondMenu(void);
 
+// NOUVEAU : Dessine UNE carte cliquable (Image + Titre)
+// Retourne 1 si cliquée
+int dessinerCarteMedia(Rectangle rect, t_media m, Texture2D miniature);
+
+// NOUVEAU : Fonction utilitaire pour dessiner l'image proportionnellement dans la carte
+void DrawTextureScaled(Texture2D texture, Rectangle destRect);
+
+
+void animLogoStart(void);
 
 
 
