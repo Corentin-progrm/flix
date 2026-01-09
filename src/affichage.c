@@ -17,47 +17,46 @@
 /* DEFINITION DES FONCTIONS =============================================== */
 
 /**
- * @fonction afficherMenuAcceuil()
- * @brief Affiche le menu principal et retourne le choix de l'utilisateur.
- * @return int Le choix de l'utilisateur.
+ * @fonction afficherTitre()
+ * @brief Affiche le titre du programme.
  */
-int afficherMenuAcceuil(void) {
-    
-    int choix = 0;      // Initialisation du choix
+int afficherBaniere(void) {
+    printf("============================================\n");
+    printf("========= Bienvenue dans NounaFlix =========\n");
+    printf("============================================\n");
 
-    printf("\n=== Menu Acceuil ===\n");
-    printf("1. Voir un media (taper le numero)\n");
-    printf("0. Quitter\n");
-    printf("Votre choix: ");
-    
-    // Sécurité de saisie (si l'utilisateur entre autre chose qu'un nombre)
-    if (scanf("%d", &choix) != 1) {
-        while(getchar() != '\n'); // Vider le buffer si erreur
-        return 0;
-    }
-    return choix;
+    return 0;
 }
 
-/**
- * @fonction afficherMenuMedia()
- * @brief Affiche le menu d'un media et retourne le choix de l'utilisateur.
- * @return int Le choix de l'utilisateur.
- */
+int afficherMenuAcceuil(void) {
+    printf("\n=============== MENU ACCEUIL ===============\n");
+    printf("[1,2,3...] Voir un media\n");
+    printf("[R] Rechercher un media\n");
+    printf("[Q] Quitter l'application\n");
+    printf("============================================\n");
+    printf("> ");
+
+    return 0;
+}
+
 int afficherMenuMedia(void) {
+    printf("\n=============== MENU MEDIA ===============\n");
+    printf("[1] Lancer le media\n"); 
+    printf("[Q] Retour Catalogue");
+    printf("\n==========================================\n");
+    printf("> ");
 
-    int choix = 0;      // Initialisation du choix
+    return 0;
+}
 
-    printf("\n=== Menu Media ===\n");
-    printf("1. Lancer un media\n"); 
-    printf("2. Retour Acceuil\n");
-    printf("Votre choix: ");
-    
-    // Sécurité de saisie (si l'utilisateur entre autre chose qu'un nombre)
-    if (scanf("%d", &choix) != 1) {
-        while(getchar() != '\n'); // Vider le buffer si erreur
-        return 0;
-    }
-    return choix;
+int afficherMenuRecherche(void) {
+    printf("\n=============== MENU RECHERCHE ===============\n");
+    printf("[1,2,3...] Voir un media\n");
+    printf("[Q] Retour Acceuil\n");
+    printf("================================================\n");
+    printf("> ");
+
+    return 0;
 }
 
 /**
@@ -65,20 +64,12 @@ int afficherMenuMedia(void) {
  * @brief Affiche l'accueil du programme.
  * @param catalogue Le catalogue de médias à afficher.
  */
-void afficherAccueil(t_catalogue catalogue) {
+int afficherCatalogue(t_catalogue catalogue) {
 
-    system("cls");      // Nettoie l'écran (Windows)
+    if (catalogue == NULL) return 0;                  // Verification que le catalogue n'est pas vide
+    int nb_total_media = getNbMedia(catalogue);     // On recupere le nombre total de medias
 
-    printf("============================================\n");
-    printf("========= Bienvenue dans NounaFlix =========\n");
-    printf("============================================\n");
-
-    // Verification que le catalogue n'est pas vide
-    if (catalogue == NULL) return;
-
-    int nb_total_media = getNbMedia(catalogue);   // On recupere le nombre total de medias
-
-    printf("\n============================ CATALOGUE (%d films) ============================\n", nb_total_media);
+    printf("\n=========== CATALOGUE (%d films) ===========\n", nb_total_media);
     
     // Pour tous les medias du catalogue
     for (int i = 0; i < nb_total_media; i++) {
@@ -89,11 +80,11 @@ void afficherAccueil(t_catalogue catalogue) {
         printf("| [%d] | %-8s, %4d\n", 
             i+1,
             getTitre(m), 
-            getAnnee(m));
-                
+            getAnnee(m));        
     }
-    printf("=============================================================================\n");
+    printf("===========================================\n");
 
+    return 0;
 }
 
 /**
@@ -103,16 +94,93 @@ void afficherAccueil(t_catalogue catalogue) {
  */
 void afficherMedia(t_media media) {
 
-    system("cls");  // Nettoie l'écran (Windows)
-
-    printf("======= %s =======\n", getTitre(media));
-    printf("\n");
+    printf("\n======= %s =======\n", getTitre(media));
     printf("| Code: %s\n", getCode(media));
     printf("| Type: %s\n", getType(media));
     printf("| Annee de sortie: %d\n", getAnnee(media));
     printf("| Duree: %d minutes\n", getDuree(media));
     printf("| Auteur: %s\n", getAuteur(media));
-
-    printf("\n=============================\n");
+    printf("=============================\n");
 }
 
+void rechercherFilmParTitre(t_catalogue catalogue) {
+    
+    if (catalogue == NULL) return;                  // Verification que le catalogue est pas vide
+
+    char recherche[100];                            // Buffer pour la recherche
+    int nb_trouve = 0;                              // Compteur de films trouvés
+
+    printf("\n=============== RECHERCHE ===============\n");
+    printf("> ");
+    
+    if (scanf(" %[^\n]", recherche) != 1) return;   // On lit la chaine de caractere
+
+    printf("\nResultats pour \"%s\" :\n", recherche);
+    printf("\n============ \"%s\" Resultats ============\n", recherche);
+
+    int nb_total = getNbMedia(catalogue);         // Nombre total de media dans le catalogue
+
+    // On parcours tout le catalogue
+    for (int i = 0; i < nb_total; i++) {
+
+        t_media m = getMediaCatalogue(catalogue, i);  // On recupere le media i
+
+        char* titreActuel = getTitre(m);                // On recupere son titre
+
+        // Si le titre contient la chaine recherchée
+        if (strstr(titreActuel, recherche) != NULL) {
+            
+            printf("| [%d] | %-8s, %4d\n", 
+                    i+1,
+                    getTitre(m), 
+                    getAnnee(m));
+            
+            nb_trouve++;
+        }
+    }
+    printf("\n=========================================\n");
+
+    if (nb_trouve == 0) {
+        printf("Aucun film trouve contenant \"%s\".\n", recherche);
+    } else {
+        printf("%d film(s) trouve(s).\n", nb_trouve);
+    }
+}
+
+/* INTERFACE GRAPHIQUE ==================================================== */
+
+void initInterface(int largeur, int hauteur, char* titre) {
+    InitWindow(largeur, hauteur, titre);
+    SetTargetFPS(60); // On bloque à 60 images par seconde pour que ce soit fluide
+}
+
+void fermerInterface(void) {
+    CloseWindow();
+}
+
+void dessinerMenuPrincipal(t_catalogue catalogue) {
+    // 1. On dessine le titre de l'application
+    DrawText("NETFLIX PERSO", 20, 20, 40, RED);
+    DrawText("Appuyez sur ESC pour quitter", 20, 70, 20, DARKGRAY);
+
+    // 2. On dessine la liste des films
+    int y = 120; // Position verticale de départ (pixels)
+    int x = 20;  // Position horizontale
+
+    int nbFilms = getNbMedia(catalogue);
+
+    for (int i = 0; i < nbFilms; i++) {
+        t_media m = getMediaCatalogue(catalogue, i);
+
+        // On prépare le texte (ex: "[1] Inception (2010)")
+        char texteFilm[100];
+        sprintf(texteFilm, "[%d] %s (%d)", i + 1, getTitre(m), getAnnee(m));
+
+        // Affichage du texte
+        // Syntaxe : DrawText(texte, posX, posY, taillePolice, Couleur)
+        DrawText(texteFilm, x, y, 20, BLACK);
+
+        // On descend de 30 pixels pour le prochain film
+        y += 30;
+    }
+}

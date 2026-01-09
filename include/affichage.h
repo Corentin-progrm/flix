@@ -13,11 +13,15 @@
 
 /* LIBRARY ================================================================ */
 #include "modele.h"
+#include "lib/include/raylib.h"
 
 /* DECLARATION DES FONCTIONS ============================================== */
 
+// Affiche le titre du programme
+int afficherBaniere(void);
+
 // Affiche l'acceuil du programme
-void afficherAccueil(t_catalogue catalogue);
+int afficherCatalogue(t_catalogue catalogue);
 
 // Affichage detaille d'un media
 void afficherMedia(t_media media);
@@ -25,5 +29,24 @@ void afficherMedia(t_media media);
 // Affiche le menu et retourne le choix de l'utilisateur
 int afficherMenuAcceuil(void);
 int afficherMenuMedia(void);
+int afficherMenuRecherche(void);
+
+// Affiche le menu de recherche des films
+void rechercherFilmParTitre(t_catalogue catalogue);
+
+
+/* INTERFACE GRAPHIQUE ==================================================== */
+
+// Ouvre la fenêtre et règle les FPS
+void initInterface(int largeur, int hauteur, char* titre);
+
+// Ferme la fenêtre proprement
+void fermerInterface(void);
+
+// Dessine tout le contenu de l'accueil (Textes, Liste...)
+void dessinerMenuPrincipal(t_catalogue catalogue);
+
+
+
 
 #endif
