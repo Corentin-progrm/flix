@@ -151,36 +151,48 @@ void rechercherFilmParTitre(t_catalogue catalogue) {
 
 void initInterface(int largeur, int hauteur, char* titre) {
     InitWindow(largeur, hauteur, titre);
-    SetTargetFPS(60); // On bloque à 60 images par seconde pour que ce soit fluide
+    SetTargetFPS(60);
 }
 
 void fermerInterface(void) {
     CloseWindow();
 }
 
-void dessinerMenuPrincipal(t_catalogue catalogue) {
-    // 1. On dessine le titre de l'application
+void dessinerFondMenu(void) {
     DrawText("NETFLIX PERSO", 20, 20, 40, RED);
-    DrawText("Appuyez sur ESC pour quitter", 20, 70, 20, DARKGRAY);
+    DrawLine(20, 70, 780, 70, LIGHTGRAY); // Une petite ligne de séparation
+}
 
-    // 2. On dessine la liste des films
-    int y = 120; // Position verticale de départ (pixels)
-    int x = 20;  // Position horizontale
-
-    int nbFilms = getNbMedia(catalogue);
-
-    for (int i = 0; i < nbFilms; i++) {
-        t_media m = getMediaCatalogue(catalogue, i);
-
-        // On prépare le texte (ex: "[1] Inception (2010)")
-        char texteFilm[100];
-        sprintf(texteFilm, "[%d] %s (%d)", i + 1, getTitre(m), getAnnee(m));
-
-        // Affichage du texte
-        // Syntaxe : DrawText(texte, posX, posY, taillePolice, Couleur)
-        DrawText(texteFilm, x, y, 20, BLACK);
-
-        // On descend de 30 pixels pour le prochain film
-        y += 30;
+// --- NOTRE FONCTION MAGIQUE ---
+int dessinerBouton(Rectangle rect, char* texte, Color couleurBase) {
+    
+    int estClique = 0;
+    Vector2 souris = GetMousePosition(); // Récupère X et Y de la souris
+    
+    // 1. Est-ce que la souris est DANS le rectangle ?
+    if (CheckCollisionPointRec(souris, rect)) {
+        
+        // OUI -> On change la couleur (Effet Hover)
+        DrawRectangleRec(rect, SKYBLUE); 
+        
+        // 2. Est-ce qu'on a cliqué ?
+        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
+            estClique = 1;
+        }
+    } else {
+        // NON -> Couleur normale
+        DrawRectangleRec(rect, couleurBase);
     }
+
+    // 3. On dessine le contour et le texte
+    DrawRectangleLinesEx(rect, 2, DARKGRAY); // Bordure
+    
+    // Centrage approximatif du texte
+    int largeurTexte = MeasureText(texte, 20);
+    int posX = rect.x + (rect.width - largeurTexte) / 2;
+    int posY = rect.y + (rect.height - 20) / 2;
+    
+    DrawText(texte, posX, posY, 20, BLACK);
+
+    return estClique;
 }

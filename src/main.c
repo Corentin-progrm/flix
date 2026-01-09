@@ -17,35 +17,64 @@
 /* DEFINITION DES FONCTIONS =============================================== */
 
 int main() {
-    // 1. Chargement des données (Comme avant)
     t_catalogue catalogue = chargerBaseDeDonnees();
+    initInterface(800, 600, "Netflix Perso - Mouse Edition");
 
-    // 2. Initialisation Graphique (Raylib)
-    // On ouvre une fenêtre de 800x600 pixels
-    initInterface(800, 600, "Netflix Perso - Raylib Edition");
-
-    // 3. Boucle Principale (Tourne à l'infini tant qu'on ne ferme pas)
-    // WindowShouldClose détecte si tu cliques sur la croix ou appuies sur ESC
     while (!WindowShouldClose()) {
 
-        // --- A. MISE A JOUR (Logique) ---
-        // (Pour l'instant vide, on ajoutera les clics souris ici plus tard)
-
-        // --- B. DESSIN (Affichage) ---
+        // --- DESSIN & LOGIQUE EN MÊME TEMPS ---
         BeginDrawing();
+            ClearBackground(RAYWHITE);
+            
+            // 1. Le titre et le fond
+            dessinerFondMenu();
 
-            ClearBackground(RAYWHITE); // On efface tout en blanc
+            // 2. Bouton QUITTER (En haut à droite)
+            // Rectangle : x=650, y=20, largeur=130, hauteur=40
+            Rectangle rectQuitter = {650, 20, 130, 40};
+            if (dessinerBouton(rectQuitter, "QUITTER", LIGHTGRAY)) {
+                break; // Sort de la boucle -> Ferme le programme
+            }
 
-            // On appelle notre fonction de dessin
-            dessinerMenuPrincipal(catalogue);
+            // 3. Bouton RECHERCHER (À côté)
+            Rectangle rectSearch = {500, 20, 130, 40};
+            if (dessinerBouton(rectSearch, "RECHERCHE", LIGHTGRAY)) {
+                // Pour l'instant on met juste un message console, 
+                // on fera la fenêtre de recherche plus tard
+                printf("Clic sur Recherche !\n");
+            }
+
+            // 4. LISTE DES FILMS CLIQUABLE
+            int y = 100;
+            int nbFilms = getNbMedia(catalogue);
+
+            for (int i = 0; i < nbFilms; i++) {
+                t_media m = getMediaCatalogue(catalogue, i);
+                
+                // On crée un rectangle pour chaque ligne de film
+                // Il prend toute la largeur de l'écran
+                Rectangle rectFilm = {20, y, 760, 30};
+                
+                // Astuce : On utilise notre fonction bouton mais avec une couleur transparente (BLANK)
+                // ou un gris très clair pour faire joli.
+                // Le texte du bouton sera le titre du film.
+                char titreComplet[100];
+                sprintf(titreComplet, "%s (%d)", getTitre(m), getAnnee(m));
+
+                // Si on clique sur le film...
+                if (dessinerBouton(rectFilm, titreComplet, RAYWHITE)) {
+                    printf("Lancement de : %s\n", getTitre(m));
+                    lancerVideo(m);
+                }
+
+                y += 35; // Espace entre les lignes
+            }
 
         EndDrawing();
     }
 
-    // 4. Nettoyage
-    fermerInterface();          // Ferme la fenêtre Raylib
-    freeCatalogue(catalogue);   // Vide la mémoire
-
+    fermerInterface();
+    freeCatalogue(catalogue);
     return 0;
 }
 

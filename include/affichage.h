@@ -13,7 +13,7 @@
 
 /* LIBRARY ================================================================ */
 #include "modele.h"
-#include "lib/include/raylib.h"
+#include "raylib.h"
 
 /* DECLARATION DES FONCTIONS ============================================== */
 
@@ -37,14 +37,15 @@ void rechercherFilmParTitre(t_catalogue catalogue);
 
 /* INTERFACE GRAPHIQUE ==================================================== */
 
-// Ouvre la fenêtre et règle les FPS
 void initInterface(int largeur, int hauteur, char* titre);
-
-// Ferme la fenêtre proprement
 void fermerInterface(void);
 
-// Dessine tout le contenu de l'accueil (Textes, Liste...)
-void dessinerMenuPrincipal(t_catalogue catalogue);
+// Affiche un bouton et renvoie 1 (true) s'il est cliqué
+int dessinerBouton(Rectangle rect, char* texte, Color couleurBase);
+
+// On garde ta fonction principale, mais elle ne prendra plus rien en paramètre pour l'instant
+// car c'est le main qui va orchestrer les boutons.
+void dessinerFondMenu(void);
 
 
 
