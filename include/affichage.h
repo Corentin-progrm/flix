@@ -13,61 +13,42 @@
 
 /* LIBRARY ================================================================ */
 #include "modele.h"
+#include "storage.h"
 #include "raylib.h"
+
+/* CONSTANTES ============================================================= */
+#define CARTE_LARGEUR 160
+#define CARTE_HAUTEUR 220
+#define CARTE_PADDING 20
 
 /* DECLARATION DES FONCTIONS ============================================== */
 
-// Affiche le titre du programme
-int afficherBaniere(void);
-
-// Affiche l'acceuil du programme
-int afficherCatalogue(t_catalogue catalogue);
-
-// Affichage detaille d'un media
-void afficherMedia(t_media media);
-
-// Affiche le menu et retourne le choix de l'utilisateur
-int afficherMenuAcceuil(void);
-int afficherMenuMedia(void);
-int afficherMenuRecherche(void);
-
-// Affiche le menu de recherche des films
-void rechercherFilmParTitre(t_catalogue catalogue);
-
-
-/* INTERFACE GRAPHIQUE ==================================================== */
-
-// Dimensions des cartes (Tu pourras changer ça plus tard)
-#define CARTE_LARGEUR 160
-#define CARTE_HAUTEUR 220
-#define CARTE_PADDING 20 // Espace entre les cartes
-
+// Variable globale pour l'accès aux textures (externe)
 extern Texture2D* mesTextures;
 
+// --- GESTION DE L'INTERFACE (Cycle de vie) ---
 void initInterface(int largeur, int hauteur, char* titre);
 void fermerInterface(void);
 
-// NOUVEAU : Charge toutes les images correspondant au catalogue en mémoire graphique
+// --- GESTION DES RESSOURCES ---
 void chargerTexturesCatalogue(t_catalogue catalogue);
-
-// NOUVEAU : Libère la mémoire graphique à la fin
 void libererTexturesCatalogue(void);
 
-void dessinerFondMenu(void);
+// --- ÉLÉMENTS GRAPHIQUES (Widgets) ---
 
-// NOUVEAU : Dessine UNE carte cliquable (Image + Titre)
-// Retourne 1 si cliquée
+// Affiche le fond, le logo et le titre
+void dessinerEnTete(void);
+
+// Affiche la barre de menus (catégories) et retourne l'index cliqué (-1 si rien)
+int dessinerBarreCategories(void);
+
+// Affiche une carte de film et retourne 1 si cliquée
 int dessinerCarteMedia(Rectangle rect, t_media m, Texture2D miniature);
 
-void dessinerCarrerMenue(void);
+// Affiche la grille de médias filtrée selon le filtre actif
+void dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif);
 
-// NOUVEAU : Fonction utilitaire pour dessiner l'image proportionnellement dans la carte
-void redimensionTextureMedia(Texture2D texture, Rectangle destRect);
-
-void dessinerLogo(void);
-
+// --- ANIMATION ---
 void animLogoStart(void);
-
-
 
 #endif

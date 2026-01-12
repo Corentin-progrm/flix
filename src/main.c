@@ -18,62 +18,40 @@
 
 int main(void)
 {
-
     initInterface(1024, 768, "NounaFlix");
-
     animLogoStart();
 
-    // 3. Chargement des données APRES l'animation
-    // Cela permet une transition fluide vers le menu
     t_catalogue catalogue = chargerBaseDeDonnees();
-    chargerTexturesCatalogue(catalogue); // Charge les images
+    chargerTexturesCatalogue(catalogue);
 
-    // 4. Boucle Principale (Grille des films)
+    // ETAT : Quel bouton est actif ? (-1 = Aucun/Tout)
+    int filtreSelectionne = -1;
+
     while (!WindowShouldClose()) 
     {
         BeginDrawing();
             
-            ClearBackground(BLACK); 
-            dessinerFondMenu();
+            ClearBackground(GetColor(0x141414FF)); 
+            dessinerEnTete();
 
-            // --- Logique de la Grille ---
-            int nbFilms = getNbMedia(catalogue);
-            int startX = 40;
-            int startY = 100;
+            // 1. MENU : On récupère le clic
+            int clicMenu = dessinerBarreCategories();
             
-            // Calcul du nombre de colonnes dynamique
-            int largeurFenetre = GetScreenWidth();
-            int espaceTotalCarte = CARTE_LARGEUR + CARTE_PADDING;
-            int colonnesMax = (largeurFenetre - (startX * 2)) / espaceTotalCarte;
-            if (colonnesMax < 1) colonnesMax = 1;
-
-            // Affichage de chaque film
-            for (int i = 0; i < nbFilms; i++) {
-                t_media m = getMediaCatalogue(catalogue, i);
+            // Si on clique sur un bouton, on met à jour le filtre
+            if (clicMenu != -1) {
+                // Petit hack : Si on clique sur le même bouton, on désactive le filtre (toggle)
+                if (filtreSelectionne == clicMenu) filtreSelectionne = -1;
+                else filtreSelectionne = clicMenu;
                 
-                int colonne = i % colonnesMax;
-                int ligne = i / colonnesMax;
-
-                Rectangle rectCarte;
-                rectCarte.x = (float)(startX + colonne * espaceTotalCarte);
-                rectCarte.y = (float)(startY + ligne * (CARTE_HAUTEUR + CARTE_PADDING));
-                rectCarte.width = (float)CARTE_LARGEUR;
-                rectCarte.height = (float)CARTE_HAUTEUR;
-
-                // On dessine la carte et on vérifie le clic en même temps
-                // (On verifie que mesTextures n'est pas NULL par sécurité)
-                if (mesTextures != NULL) {
-                    if (dessinerCarteMedia(rectCarte, m, mesTextures[i])) {
-                        printf("Lancement du film : %s\n", getTitre(m));
-                        lancerVideo(m);
-                    }
-                }
+                printf("Filtre change : %d\n", filtreSelectionne);
             }
+
+            // 2. GRILLE : On appelle notre nouvelle fonction magique
+            dessinerGrilleFiltree(catalogue, filtreSelectionne);
 
         EndDrawing();
     }
 
-    // 5. Nettoyage
     libererTexturesCatalogue();
     freeCatalogue(catalogue);
     fermerInterface();

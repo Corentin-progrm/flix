@@ -14,23 +14,102 @@
 #include <string.h>
 #include "affichage.h"
 
-/* VARIABLES GLOBALES ===================================================== */
-Texture2D* mesTextures = NULL;          // Tableau dynamique des textures chargées
-static int nbTexturesChargees = 0;      // Nombre de textures chargées
-
 /* CONSTANTES ============================================================= */
-#define CHEMIN_IMAGES "assets/images/%s.jpg"
+// Couleurs de l'application
+const Color THEME_FOND_APP        = { 20, 20, 20, 255 };    // Gris très foncé (Presque noir)
+const Color THEME_TITRE           = { 229, 9, 20, 255 };    // Rouge "Netflix"
+const Color THEME_LOGO_CADRE      = { 200, 200, 200, 255 }; // Gris clair
 
-/* DEFINITION DES FONCTIONS =============================================== */
+// Couleurs des Cartes Films
+const Color CARTE_FOND            = { 40, 40, 40, 255 };    // Gris foncé
+const Color CARTE_TEXTE_TITRE     = { 34, 139, 34, 255 };   // Vert forêt (Ton choix actuel)
+const Color CARTE_TEXTE_ANNEE     = { 150, 150, 150, 255 }; // Gris moyen
+const Color CARTE_BORDURE_REPOS   = { 0, 100, 0, 255 };     // Vert foncé
+const Color CARTE_BORDURE_HOVER   = { 230, 230, 230, 255 }; // Blanc/Gris au survol
+const int   CARTE_EPAISSEUR_BORD  = 3;
+
+#define COL_BTN_AJOUTER    LIGHTGRAY
+#define COL_BTN_SEARCH     LIME        // "LIME" est le vert vif standard Raylib
+#define COL_BTN_FILM       MAROON      // Rouge foncé
+#define COL_BTN_SERIE      PURPLE
+#define COL_BTN_AUTRE      GOLD
+
+#define CHEMIN_IMAGES "assets/images/%s.jpg" // Attention: .jpg ou .png selon tes fichiers
+
+/* VARIABLES GLOBALES ===================================================== */
+Texture2D* mesTextures = NULL;          
+static int nbTexturesChargees = 0;      
+
+/* FONCTIONS UTILITAIRES ================================================== */
+
+// Redimensionne une image pour remplir un rectangle (Mode COVER) avec découpage
+static void redimensionTextureMedia(Texture2D texture, Rectangle destRect) {
+    if (texture.id <= 0) return;
+
+    // Calcul du ratio pour que l'image couvre tout le rectangle
+    float scaleX = destRect.width / (float)texture.width;
+    float scaleY = destRect.height / (float)texture.height;
+    float scale = (scaleX > scaleY) ? scaleX : scaleY; // On prend le max pour remplir
+
+    float texWidthZoom = texture.width * scale;
+    float texHeightZoom = texture.height * scale;
+
+    // Centrage
+    Vector2 pos = { 
+        destRect.x + (destRect.width - texWidthZoom) / 2.0f, 
+        destRect.y + (destRect.height - texHeightZoom) / 2.0f 
+    };
+
+    // Découpage de ce qui dépasse
+    BeginScissorMode((int)destRect.x, (int)destRect.y, (int)destRect.width, (int)destRect.height);
+        DrawTextureEx(texture, pos, 0.0f, scale, WHITE);
+    EndScissorMode();
+}
+
+// Dessine un bouton carré style "Tuile"
+static int dessinerCarreMenu(Rectangle rect, char* texte, Color couleurPrincipale) {
+    int estClique = 0;
+    Vector2 souris = GetMousePosition();
+    
+    // Par défaut : Fond transparent (30%)
+    Color couleurFond = Fade(couleurPrincipale, 0.3f); 
+    
+    // Détection Souris
+    if (CheckCollisionPointRec(souris, rect)) {
+        couleurFond = Fade(couleurPrincipale, 0.6f); // Plus opaque au survol (60%)
+        SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+        
+        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) estClique = 1;
+    }
+
+    // Dessin
+    DrawRectangleRec(rect, couleurFond);               
+    DrawRectangleLinesEx(rect, 4, couleurPrincipale);  // Bordure épaisse couleur pure
+
+    // Texte aligné en bas à droite
+    int taillePolice = 20;
+    int largeurTexte = MeasureText(texte, taillePolice);
+    int posX = (int)(rect.x + rect.width - largeurTexte - 10);
+    int posY = (int)(rect.y + rect.height - taillePolice - 10);
+
+    DrawText(texte, posX, posY, taillePolice, RAYWHITE); // Texte en blanc pour lisibilité
+
+    return estClique;
+}
+
+/* FONCTIONS UI =========================================================== */
 
 void initInterface(int largeur, int hauteur, char* titre) {
-    InitWindow(largeur, hauteur, titre);            // Taille de la fenêtre
+    InitWindow(largeur, hauteur, titre);
     
-    Image icone = LoadImage("assets/logo.png");     // Charge l'icône
-    SetWindowIcon(icone); 
-    UnloadImage(icone);
+    // Chargement de l'icône de fenêtre (si dispo)
+    if (FileExists("assets/logo.png")) {
+        Image icone = LoadImage("assets/logo.png");
+        SetWindowIcon(icone); 
+        UnloadImage(icone);
+    }
 
-    SetTargetFPS(60);                               // Limite à 60 FPS
+    SetTargetFPS(60);
 }
 
 void fermerInterface(void) {
@@ -38,25 +117,23 @@ void fermerInterface(void) {
 }
 
 void chargerTexturesCatalogue(t_catalogue catalogue) {
-    nbTexturesChargees = getNbMedia(catalogue);         // Nombre de médias dans le catalogue
-    if (nbTexturesChargees == 0) return;                // Si vide, rien à faire
+    nbTexturesChargees = getNbMedia(catalogue);
+    if (nbTexturesChargees == 0) return;
 
-    // Allocation dynamique du tableau
     mesTextures = (Texture2D*)malloc(sizeof(Texture2D) * nbTexturesChargees);
 
-    // Chargement des images
     for (int i = 0; i < nbTexturesChargees; i++) {
-        t_media m = getMediaCatalogue(catalogue, i);        // Récupère le média
-        char cheminImage[100];
+        t_media m = getMediaCatalogue(catalogue, i);
+        char cheminImage[150];
         
-        sprintf(cheminImage, CHEMIN_IMAGES, getCode(m));    // Construit le chemin de l'image
+        sprintf(cheminImage, CHEMIN_IMAGES, getCode(m));
 
         if (FileExists(cheminImage)) {
-            mesTextures[i] = LoadTexture(cheminImage);      // Charge la texture
-            SetTextureFilter(mesTextures[i], TEXTURE_FILTER_BILINEAR);      // Filtrage bilinéaire
+            mesTextures[i] = LoadTexture(cheminImage);
+            SetTextureFilter(mesTextures[i], TEXTURE_FILTER_BILINEAR);
         } else {
-            // Image par défaut (Magenta)
-            Image imgVide = GenImageColor(CARTE_LARGEUR, CARTE_LARGEUR, MAGENTA);
+            // Image vide (Magenta) si introuvable
+            Image imgVide = GenImageColor(CARTE_LARGEUR, CARTE_HAUTEUR, MAGENTA);
             mesTextures[i] = LoadTextureFromImage(imgVide);
             UnloadImage(imgVide);
         }
@@ -74,88 +151,138 @@ void libererTexturesCatalogue(void) {
     }
 }
 
-void redimensionTextureMedia(Texture2D texture, Rectangle destRect) {
-    if (texture.id <= 0) return;
 
-    float scaleX = destRect.width / (float)texture.width;
-    float scaleY = destRect.height / (float)texture.height;
-    float scale = (scaleX > scaleY) ? scaleX : scaleY; 
+/* FONCTIONS AFFICHAGE ===================================================== */
 
-    float texWidthZoom = texture.width * scale;
-    float texHeightZoom = texture.height * scale;
+// Affiche l'En-tête : Fond général, Logo et Titre
+void dessinerEnTete(void) {
+    Rectangle rectLogo = { 25, 25, 50, 50 };
+    DrawRectangleLinesEx(rectLogo, 3, THEME_LOGO_CADRE);
+    DrawText("nF", 45, 50, 20, THEME_TITRE);
 
-    Vector2 pos = { 
-        destRect.x + (destRect.width - texWidthZoom) / 2.0f, 
-        destRect.y + (destRect.height - texHeightZoom) / 2.0f 
-    };
-
-    BeginScissorMode((int)destRect.x, (int)destRect.y, (int)destRect.width, (int)destRect.height);
-        
-        DrawTextureEx(texture, pos, 0.0f, scale, WHITE);
-
-    EndScissorMode();
+    // 3. Titre (Juste à droite du logo)
+    DrawText("NounaFlix", 100, 40, 40, THEME_TITRE);
 }
 
-void dessinerFondMenu(void) {
-    DrawText("NounaFlix", 20, 20, 40, RED);     // Titre
+int dessinerBarreCategories(void) {
+    
+    // 1. CONFIGURATION
+    int hauteur = 50;
+    int largeur = 100;
+    int gap = 15;           
+    int y = 25; 
 
-    void dessinerLogo(void);
-    //Ajouter le bloque recherche
-    //Ajouter le bloque serie
-    //Ajouter le bloque film
+    int finZoneTitre = 350; 
+    
+    int largeurBarre = (5 * largeur) + (4 * gap);
+    
+    int espaceDispo = GetScreenWidth() - finZoneTitre;
+    
+    int x = finZoneTitre + (espaceDispo - largeurBarre) / 2;
+
+    if (x < finZoneTitre) x = finZoneTitre;
+
+    int pas = largeur + gap; 
+    int choix = -1;
+
+    // 3. DESSIN DES BOUTONS
+    if (dessinerCarreMenu((Rectangle){(float)x, (float)y, (float)largeur, (float)hauteur}, "Ajouter", COL_BTN_AJOUTER)) choix = 0;
+    if (dessinerCarreMenu((Rectangle){(float)(x + pas), (float)y, (float)largeur, (float)hauteur}, "Search", COL_BTN_SEARCH)) choix = 1;
+    if (dessinerCarreMenu((Rectangle){(float)(x + pas * 2), (float)y, (float)largeur, (float)hauteur}, "Film", COL_BTN_FILM)) choix = 2;
+    if (dessinerCarreMenu((Rectangle){(float)(x + pas * 3), (float)y, (float)largeur, (float)hauteur}, "Serie", COL_BTN_SERIE)) choix = 3;
+    if (dessinerCarreMenu((Rectangle){(float)(x + pas * 4), (float)y, (float)largeur, (float)hauteur}, "Autre", COL_BTN_AUTRE)) choix = 4;
+    
+    if (choix == -1) SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+    
+    return choix;
 }
 
 int dessinerCarteMedia(Rectangle rect, t_media m, Texture2D miniature) {
-    
     int estClique = 0;
     Vector2 souris = GetMousePosition();
     
-    // Couleurs par défaut
-    Color couleurBordure = DARKGREEN;
-    Color couleurFond = GRAY;
-    Color couleurTexte = DARKGREEN;
-    int epaisseurBordure = 3;
+    Color couleurBordure = CARTE_BORDURE_REPOS;
 
-    // Collision avec la souris
+    // Detection collision
     if (CheckCollisionPointRec(souris, rect)) {
-        couleurBordure = BLACK;         // La bordure devient NOIRE
-        
-        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
-            estClique = 1;
-        }
+        couleurBordure = CARTE_BORDURE_HOVER; // Changement de couleur au survol
+        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) estClique = 1;
     }
 
-    DrawRectangleRec(rect, couleurFond);    // Dessine le fond de la carte
+    // 1. Fond de carte
+    DrawRectangleRec(rect, CARTE_FOND);
     
-    // Calcul de la zone image
+    // 2. Image (Avec espace en bas pour le texte)
     Rectangle rectImage = { rect.x, rect.y, rect.width, rect.height - 50 };
-    
-    // Fond sous l'image (au cas où l'image est transparente ou charge mal)
-    DrawRectangleRec(rectImage, BLACK); 
-    
-    // Redimensionnement et dessin de l'image
-    redimensionTextureMedia(miniature, rectImage); 
+    DrawRectangleRec(rectImage, BLACK); // Fond noir sous l'image
+    redimensionTextureMedia(miniature, rectImage);
         
-    // Préparation du titre (Couper si trop long)
+    // 3. Textes
     char titreCoupe[30];
     strncpy(titreCoupe, getTitre(m), 13);
     titreCoupe[13] = '\0'; 
     if(strlen(getTitre(m)) > 13) strcat(titreCoupe, "...");
 
-    // Dessin du texte
-    DrawText(titreCoupe, rect.x + 8, rect.y + rect.height - 40, 20, couleurTexte);
-    
-    // Dessin de l'année
-    DrawText(TextFormat("%d", getAnnee(m)), rect.x + 8, rect.y + rect.height - 20, 10, DARKGRAY);
+    DrawText(titreCoupe, (int)rect.x + 8, (int)rect.y + (int)rect.height - 40, 20, CARTE_TEXTE_TITRE);
+    DrawText(TextFormat("%d", getAnnee(m)), (int)rect.x + 8, (int)rect.y + (int)rect.height - 20, 10, CARTE_TEXTE_ANNEE);
 
-    // Dessin de la bordure
-    DrawRectangleLinesEx(rect, epaisseurBordure, couleurBordure);
+    // 4. Bordure (Dessinée en dernier pour être au dessus)
+    DrawRectangleLinesEx(rect, CARTE_EPAISSEUR_BORD, couleurBordure);
 
     return estClique;
 }
 
-void animLogoStart(void)
-{
+void dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif) {
+    
+    int nbFilms = getNbMedia(catalogue);
+    
+    // --- Configuration de la Grille ---
+    int startX = 40;
+    int startY = 200; // Place sous le menu
+    int largeurFenetre = GetScreenWidth();
+    int espaceTotalCarte = CARTE_LARGEUR + CARTE_PADDING;
+    
+    // Calcul des colonnes
+    int colonnesMax = (largeurFenetre - (startX * 2)) / espaceTotalCarte;
+    if (colonnesMax < 1) colonnesMax = 1;
+
+    // COMPTEUR VISUEL : Sert à savoir où dessiner la prochaine carte
+    int compteurAffiches = 0;
+
+    for (int i = 0; i < nbFilms; i++) {
+        t_media m = getMediaCatalogue(catalogue, i);
+
+        // 1. FILTRAGE : On demande au modèle si on doit afficher ce média
+        if (mediaCorrespondCategorie(m, filtreActif)) {
+            
+            // 2. CALCUL DE POSITION (Basé sur compteurAffiches, PAS sur i)
+            int colonne = compteurAffiches % colonnesMax;
+            int ligne = compteurAffiches / colonnesMax;
+
+            Rectangle rectCarte;
+            rectCarte.x = (float)(startX + colonne * espaceTotalCarte);
+            rectCarte.y = (float)(startY + ligne * (CARTE_HAUTEUR + CARTE_PADDING));
+            rectCarte.width = (float)CARTE_LARGEUR;
+            rectCarte.height = (float)CARTE_HAUTEUR;
+
+            // 3. DESSIN
+            if (mesTextures != NULL) {
+                if (dessinerCarteMedia(rectCarte, m, mesTextures[i])) {
+                    printf("Lancement du film : %s\n", getTitre(m));
+                    lancerVideo(m);
+                }
+            }
+
+            // On a dessiné une carte, on incrémente le compteur visuel
+            compteurAffiches++;
+        }
+    }
+}
+
+/* FONCTIONS ANNIMATION =================================================== */
+    
+void animLogoStart(void) {
+
     int logoPositionX = GetScreenWidth()/2 - 128;
     int logoPositionY = GetScreenHeight()/2 - 128;
 
@@ -236,16 +363,4 @@ void animLogoStart(void)
             }
         EndDrawing();
     }
-}
-
-void dessinerLogo(void) {    
-    
-
-
-}
-
-void dessinerCarrerMenue(void) {
-
-
-    
 }

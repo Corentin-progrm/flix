@@ -30,4 +30,7 @@ int fichierExiste(char *chemin);
 // Lance la vidéo associée au media
 void lancerVideo(t_media media);
 
+// Vérifie si un media correspond à une catégorie donnée (indexMenu)
+int mediaCorrespondCategorie(t_media m, int indexMenu);
+
 #endif

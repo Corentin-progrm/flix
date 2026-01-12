@@ -3,8 +3,8 @@ MOV002;Film;Le Parrain;1972;175;F. Coppola
 MOV003;Film;Pulp Fiction;1994;154;Q. Tarantino
 MOV004;Film;Interstellar;2014;169;C. Nolan
 MOV005;Film;Parasite;2019;132;B. Joon-ho
-MOV006;Film;Matrix;1999;136;L. Wachowski
-MOV007;Film;Forrest Gump;1994;142;R. Zemeckis
+MOV006;Serie;Matrix;1999;136;L. Wachowski
+MOV007;Serie;Forrest Gump;1994;142;R. Zemeckis
 MOV008;Film;Gladiator;2000;155;R. Scott
 MOV009;Film;Titanic;1997;195;J. Cameron
-MOV010;Film;Avatar;2009;162;J. Cameron
+MOV010;Serie;Avatar;2009;162;J. Cameron
