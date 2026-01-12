@@ -59,9 +59,12 @@ void dessinerFondMenu(void);
 // Retourne 1 si cliquée
 int dessinerCarteMedia(Rectangle rect, t_media m, Texture2D miniature);
 
-// NOUVEAU : Fonction utilitaire pour dessiner l'image proportionnellement dans la carte
-void DrawTextureScaled(Texture2D texture, Rectangle destRect);
+void dessinerCarrerMenue(void);
 
+// NOUVEAU : Fonction utilitaire pour dessiner l'image proportionnellement dans la carte
+void redimensionTextureMedia(Texture2D texture, Rectangle destRect);
+
+void dessinerLogo(void);
 
 void animLogoStart(void);
 

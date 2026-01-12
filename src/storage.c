@@ -15,6 +15,8 @@
 
 /* CONSTANTES ============================================================= */
 #define CHEMIN_BDD "assets/base_de_donnees.txt"
+#define CHEMIN_MEDIAS "assets/medias/%s.mp4"
+#define CHEMIN_LANCEMENT_MEDIAS "start assets/medias/%s.mp4"
 
 /* DEFINITION DES FONCTIONS =============================================== */
 
@@ -45,7 +47,7 @@ void lancerVideo(t_media media) {
 
     char commande[256];         // Buffer pour la commande système
     
-    sprintf(commande, "start assets/%s.mp4", getCode(media));   //
+    sprintf(commande, CHEMIN_LANCEMENT_MEDIAS, getCode(media));   //
     
     printf("[*] Lancement de : %s ...\n", getTitre(media));
     
@@ -90,7 +92,7 @@ t_catalogue chargerBaseDeDonnees(void) {
         // Si la ligne est bien formée (6 éléments trouvés)
         if (n == 6) {
             // Construction du chemin de la vidéo
-            sprintf(cheminVideo, "assets/%s.mp4", tCode);
+            sprintf(cheminVideo, CHEMIN_MEDIAS, tCode);
             
             // On vérifie si la vidéo existe réellement
             if (fichierExiste(cheminVideo)) {
