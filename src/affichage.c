@@ -232,30 +232,54 @@ int dessinerCarteMedia(Rectangle rect, t_media m, Texture2D miniature) {
     return estClique;
 }
 
-void dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif) {
+// Affiche le champ de saisie
+void dessinerBarreRecherche(char* bufferTexte, int estActif) {
+    // Position : Juste en dessous du menu Catégories
+    int largeur = 400;
+    int x = (GetScreenWidth() - largeur) / 2;
+    int y = 120; // Entre le menu et la grille
+
+    Rectangle rect = { (float)x, (float)y, (float)largeur, 30 };
+
+    // Couleur de la boite
+    DrawRectangleRec(rect, RAYWHITE);
+    
+    // Bordure (Vert si actif, Gris sinon)
+    Color colBordure = estActif ? GREEN : LIGHTGRAY;
+    DrawRectangleLinesEx(rect, 2, colBordure);
+
+    // Texte à l'intérieur
+    DrawText(bufferTexte, x + 10, y + 5, 20, BLACK);
+
+}
+
+void dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif, char* recherche) {
     
     int nbFilms = getNbMedia(catalogue);
-    
-    // --- Configuration de la Grille ---
     int startX = 40;
-    int startY = 200; // Place sous le menu
+    int startY = 180; // On descend un peu pour laisser la place à la barre de recherche
+    
+    // ... (Calcul des colonnes identique à avant) ...
     int largeurFenetre = GetScreenWidth();
     int espaceTotalCarte = CARTE_LARGEUR + CARTE_PADDING;
-    
-    // Calcul des colonnes
     int colonnesMax = (largeurFenetre - (startX * 2)) / espaceTotalCarte;
     if (colonnesMax < 1) colonnesMax = 1;
 
-    // COMPTEUR VISUEL : Sert à savoir où dessiner la prochaine carte
     int compteurAffiches = 0;
 
     for (int i = 0; i < nbFilms; i++) {
         t_media m = getMediaCatalogue(catalogue, i);
 
-        // 1. FILTRAGE : On demande au modèle si on doit afficher ce média
-        if (mediaCorrespondCategorie(m, filtreActif)) {
+        // --- DOUBLE FILTRAGE ---
+        // 1. Est-ce que la catégorie est bonne ?
+        int matchCategorie = mediaCorrespondCategorie(m, filtreActif);
+        
+        // 2. Est-ce que le titre contient le texte ?
+        int matchRecherche = mediaCorrespondRecherche(m, recherche);
+
+        // Si les DEUX conditions sont vraies, on affiche
+        if (matchCategorie && matchRecherche) {
             
-            // 2. CALCUL DE POSITION (Basé sur compteurAffiches, PAS sur i)
             int colonne = compteurAffiches % colonnesMax;
             int ligne = compteurAffiches / colonnesMax;
 
@@ -265,15 +289,12 @@ void dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif) {
             rectCarte.width = (float)CARTE_LARGEUR;
             rectCarte.height = (float)CARTE_HAUTEUR;
 
-            // 3. DESSIN
             if (mesTextures != NULL) {
                 if (dessinerCarteMedia(rectCarte, m, mesTextures[i])) {
-                    printf("Lancement du film : %s\n", getTitre(m));
+                    printf("Lancement : %s\n", getTitre(m));
                     lancerVideo(m);
                 }
             }
-
-            // On a dessiné une carte, on incrémente le compteur visuel
             compteurAffiches++;
         }
     }

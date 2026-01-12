@@ -18,6 +18,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 /* DECLARATION DES FONCTIONS ============================================== */
 
@@ -32,5 +33,11 @@ void lancerVideo(t_media media);
 
 // Vérifie si un media correspond à une catégorie donnée (indexMenu)
 int mediaCorrespondCategorie(t_media m, int indexMenu);
+
+// Vérifie si le titre du media contient le texte de recherche (case insensitive)
+int texteContient(const char* haystack, const char* needle);
+
+// Fonction appelée par l'affichage pour filtrer
+int mediaCorrespondRecherche(t_media m, char* texteRecherche);
 
 #endif

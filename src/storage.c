@@ -153,3 +153,31 @@ int mediaCorrespondCategorie(t_media m, int indexMenu) {
     return 0; // Ne correspond pas
 }
 
+
+int texteContient(const char* haystack, const char* needle) {
+    if (!needle || strlen(needle) == 0) return 1; // Recherche vide = tout matche
+
+    // On fait des copies locales pour ne pas modifier les vraies données
+    char h[100];
+    char n[100];
+    
+    // Copie et conversion en minuscule
+    strncpy(h, haystack, 99); h[99]='\0';
+    strncpy(n, needle, 99); n[99]='\0';
+    
+    for(int i = 0; h[i]; i++) h[i] = tolower(h[i]);
+    for(int i = 0; n[i]; i++) n[i] = tolower(n[i]);
+
+    // Comparaison standard
+    return (strstr(h, n) != NULL);
+}
+
+// Fonction appelée par l'affichage pour filtrer
+int mediaCorrespondRecherche(t_media m, char* texteRecherche) {
+    // Si la recherche est vide, on affiche tout
+    if (texteRecherche == NULL || strlen(texteRecherche) == 0) return 1;
+
+    // On cherche dans le TITRE
+    return texteContient(getTitre(m), texteRecherche);
+}
+
