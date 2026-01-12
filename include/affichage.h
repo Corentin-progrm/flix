@@ -51,6 +51,9 @@ void dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif, char* recherc
 // Affiche la barre de recherche avec le texte courant
 void dessinerBarreRecherche(char* bufferTexte, int estActif);
 
+// Affiche la page de détails d'un média.
+int dessinerPageDetails(t_media m, Texture2D affiche);
+
 // --- ANIMATION ---
 void animLogoStart(void);
 

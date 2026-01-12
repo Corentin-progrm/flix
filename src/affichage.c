@@ -300,6 +300,84 @@ void dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif, char* recherc
     }
 }
 
+// --- NOUVELLE FONCTION : PAGE DETAILS ---
+int dessinerPageDetails(t_media m, Texture2D affiche) {
+    int action = 0; // 0=Rien, 1=Retour, 2=Play
+
+    // 1. Bouton RETOUR (En haut à gauche)
+    Rectangle btnRetour = { 20, 90, 100, 40 }; // Sous le header
+    if (dessinerCarreMenu(btnRetour, "< Retour", DARKGRAY)) {
+        action = 1;
+    }
+
+    // 2. Mise en page
+    int startY = 140;
+    int imgW = 300;
+    int imgH = 450;
+    
+    // Zone Image (A gauche)
+    Rectangle rectImage = { 50, (float)startY, (float)imgW, (float)imgH };
+    
+    // Ombre portée pour faire joli
+    DrawRectangle(55, startY + 5, imgW, imgH, Fade(BLACK, 0.5f));
+    DrawRectangleRec(rectImage, BLACK);
+    redimensionTextureMedia(affiche, rectImage);
+    DrawRectangleLinesEx(rectImage, 2, DARKGRAY);
+
+    // Zone Infos (A droite)
+    int textX = 380; // A droite de l'image
+    int textY = startY;
+
+    // Titre (Gros)
+    DrawText(getTitre(m), textX, textY, 40, WHITE);
+    
+    // Ligne décorative sous le titre
+    DrawLine(textX, textY + 50, GetScreenWidth() - 50, textY + 50, CARTE_BORDURE_REPOS);
+
+    // Détails (Lignes espacées)
+    textY += 70;
+    int taillePolice = 20;
+    int ecart = 35;
+    Color colLabel = LIGHTGRAY;
+    Color colValue = WHITE;
+
+    // On utilise TextFormat pour insérer les variables
+    DrawText("Annee :", textX, textY, taillePolice, colLabel);
+    DrawText(TextFormat("%d", getAnnee(m)), textX + 150, textY, taillePolice, colValue);
+    textY += ecart;
+
+    DrawText("Duree :", textX, textY, taillePolice, colLabel);
+    DrawText(TextFormat("%d min", getDuree(m)), textX + 150, textY, taillePolice, colValue); // Attention : getDuree à ajouter dans ton modele.h si pas fait !
+    textY += ecart;
+
+    DrawText("Genre :", textX, textY, taillePolice, colLabel);
+    DrawText(getType(m), textX + 150, textY, taillePolice, colValue); // Idem pour getGenre
+    textY += ecart;
+    
+    DrawText("Code :", textX, textY, taillePolice, colLabel);
+    DrawText(getCode(m), textX + 150, textY, taillePolice, colValue);
+    textY += ecart;
+
+    DrawText("Auteur :", textX, textY, taillePolice, colLabel);
+    DrawText(getAuteur(m), textX + 150, textY, taillePolice, colValue);
+    textY += ecart + 20;
+
+    // 3. Gros Bouton LECTURE
+    Rectangle btnPlay = { (float)textX, (float)textY + 20, 200, 60 };
+    
+    // On dessine le bouton manuellement pour qu'il soit bien rouge
+    Color colBtn = CARTE_TEXTE_TITRE; // Rouge Netflix
+    if (CheckCollisionPointRec(GetMousePosition(), btnPlay)) {
+        colBtn = CARTE_BORDURE_REPOS; // Plus vif au survol
+        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) action = 2;
+    }
+    
+    DrawRectangleRec(btnPlay, colBtn);
+    DrawText("LECTURE", (int)btnPlay.x + 30, (int)btnPlay.y + 15, 30, WHITE);
+
+    return action;
+}
+
 /* FONCTIONS ANNIMATION =================================================== */
     
 void animLogoStart(void) {
