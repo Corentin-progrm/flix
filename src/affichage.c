@@ -101,6 +101,7 @@ static int dessinerCarreMenu(Rectangle rect, char* texte, Color couleurPrincipal
 /* FONCTIONS UI =========================================================== */
 
 void initInterface(int largeur, int hauteur, char* titre) {
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(largeur, hauteur, titre);
     
     // Chargement de l'icône de fenêtre (si dispo)
@@ -167,21 +168,22 @@ void dessinerEnTete(void) {
 
 int dessinerBarreCategories(void) {
     
-    // 1. CONFIGURATION
+// 1. CONFIGURATION
     int hauteur = 50;
     int largeur = 100;
     int gap = 15;           
     int y = 25; 
 
-    int finZoneTitre = 350; 
+    // 2. CALCUL DE LA POSITION X (Alignement DROITE)
+    // On calcule la place totale que prennent les 5 boutons et les 4 espaces
+    int largeurTotaleMenu = (5 * largeur) + (4 * gap);
     
-    int largeurBarre = (5 * largeur) + (4 * gap);
-    
-    int espaceDispo = GetScreenWidth() - finZoneTitre;
-    
-    int x = finZoneTitre + (espaceDispo - largeurBarre) / 2;
+    // Formule : LargeurEcran - TailleMenu - MargeSouhaitée(25)
+    int x = GetScreenWidth() - largeurTotaleMenu - 25;
 
-    if (x < finZoneTitre) x = finZoneTitre;
+    // (Optionnel) Sécurité : Si l'écran est trop petit, on empêche le menu 
+    // d'écraser le logo à gauche (on bloque à 150px minimum)
+    if (x < 150) x = 150; 
 
     int pas = largeur + gap; 
     int choix = -1;
@@ -262,15 +264,26 @@ int dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif, char* recherch
     int filmClique = -1; // Par défaut, aucun clic
     int nbFilms = getNbMedia(catalogue);
     
-    // --- CONFIGURATION DE LA GRILLE ---
-    int startX = 40;
-    int startY = 180;
+// Dans affichage.c -> dessinerGrilleFiltree
+
+    // --- CONFIGURATION DE LA GRILLE DYNAMIQUE ---
     int largeurFenetre = GetScreenWidth();
     int espaceTotalCarte = CARTE_LARGEUR + CARTE_PADDING;
-    
-    // Calcul dynamique du nombre de colonnes
-    int colonnesMax = (largeurFenetre - (startX * 2)) / espaceTotalCarte;
+    int margeMinimale = 40; // On veut au moins 40px de chaque côté
+
+    // 1. Calcul du nombre de colonnes possibles
+    int colonnesMax = (largeurFenetre - (margeMinimale * 2)) / espaceTotalCarte;
     if (colonnesMax < 1) colonnesMax = 1;
+
+    // 2. Calcul du startX pour CENTRER le bloc de cartes
+    // (Largeur fenêtre - Largeur totale des cartes) / 2
+    int largeurContenu = colonnesMax * espaceTotalCarte;
+    int startX = (largeurFenetre - largeurContenu) / 2;
+    
+    // Petit ajustement visuel pour centrer par rapport au visuel de la carte
+    startX += CARTE_PADDING / 2; 
+
+    int startY = 180;
 
     // --- GESTION DU SCROLL ---
     
