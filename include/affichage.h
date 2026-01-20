@@ -46,7 +46,7 @@ int dessinerBarreCategories(void);
 int dessinerCarteMedia(Rectangle rect, t_media m, Texture2D miniature);
 
 // Affiche la grille de médias filtrée selon le filtre actif
-void dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif, char* recherche);
+int dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif, char* recherche);
 
 // Affiche la barre de recherche avec le texte courant
 void dessinerBarreRecherche(char* bufferTexte, int estActif);
