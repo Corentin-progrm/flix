@@ -168,22 +168,21 @@ void dessinerEnTete(void) {
 
 int dessinerBarreCategories(void) {
     
-// 1. CONFIGURATION
+    // 1. CONFIGURATION
     int hauteur = 50;
     int largeur = 100;
     int gap = 15;           
     int y = 25; 
 
-    // 2. CALCUL DE LA POSITION X (Alignement DROITE)
-    // On calcule la place totale que prennent les 5 boutons et les 4 espaces
-    int largeurTotaleMenu = (5 * largeur) + (4 * gap);
+    int finZoneTitre = 350; 
     
-    // Formule : LargeurEcran - TailleMenu - MargeSouhaitée(25)
-    int x = GetScreenWidth() - largeurTotaleMenu - 25;
+    int largeurBarre = (5 * largeur) + (4 * gap);
+    
+    int espaceDispo = GetScreenWidth() - finZoneTitre;
+    
+    int x = finZoneTitre + (espaceDispo - largeurBarre) / 2;
 
-    // (Optionnel) Sécurité : Si l'écran est trop petit, on empêche le menu 
-    // d'écraser le logo à gauche (on bloque à 150px minimum)
-    if (x < 150) x = 150; 
+    if (x < finZoneTitre) x = finZoneTitre;
 
     int pas = largeur + gap; 
     int choix = -1;
@@ -266,33 +265,27 @@ int dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif, char* recherch
     
 // Dans affichage.c -> dessinerGrilleFiltree
 
-    // --- CONFIGURATION DE LA GRILLE DYNAMIQUE ---
+    // --- CONFIGURATION DYNAMIQUE & CENTRAGE ---
+    int startY = 180;
     int largeurFenetre = GetScreenWidth();
     int espaceTotalCarte = CARTE_LARGEUR + CARTE_PADDING;
-    int margeMinimale = 40; // On veut au moins 40px de chaque côté
+    int margeMinimale = 40;
 
-    // 1. Calcul du nombre de colonnes possibles
+    // Calcul du nombre de colonnes possibles
     int colonnesMax = (largeurFenetre - (margeMinimale * 2)) / espaceTotalCarte;
     if (colonnesMax < 1) colonnesMax = 1;
 
-    // 2. Calcul du startX pour CENTRER le bloc de cartes
-    // (Largeur fenêtre - Largeur totale des cartes) / 2
+    // CALCUL DU CENTRAGE (La formule magique)
     int largeurContenu = colonnesMax * espaceTotalCarte;
     int startX = (largeurFenetre - largeurContenu) / 2;
-    
-    // Petit ajustement visuel pour centrer par rapport au visuel de la carte
-    startX += CARTE_PADDING / 2; 
-
-    int startY = 180;
+    startX += CARTE_PADDING / 2; // Petit ajustement pour être pille au milieu
 
     // --- GESTION DU SCROLL ---
-    
-    // 1. Détection de la molette
     float wheel = GetMouseWheelMove();
     if (wheel != 0) {
-        scrollY -= wheel * 20.0f; // Vitesse de scroll
+        scrollY -= wheel * 20.0f; 
     }
-
+    
     // 2. Pré-calcul : Compter les films à afficher pour connaitre la hauteur totale
     int nbAffichesFiltrees = 0;
     for (int i = 0; i < nbFilms; i++) {
@@ -400,6 +393,8 @@ int dessinerPageDetails(t_media m, Texture2D affiche) {
     
     // Zone Image (A gauche)
     Rectangle rectImage = { 50, (float)startY, (float)imgW, (float)imgH };
+
+    dessinerEnTete();
     
     // Ombre portée pour faire joli
     DrawRectangle(55, startY + 5, imgW, imgH, Fade(BLACK, 0.5f));

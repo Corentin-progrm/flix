@@ -32,15 +32,9 @@ int main(void)
     char bufferRecherche[64] = {0}; // Texte recherche
     int modeRecherche = 0;          // Barre de recherche visible ou non
 
-    // 3. Boucle Principale
-    // ... imports et début du main identiques ...
-
-    // 3. Boucle Principale
     while (!WindowShouldClose()) 
     {
-        // --- LOGIQUE CLAVIER (Recherche) ---
-        // (Ton code clavier ne change pas)
-        // --- LOGIQUE CLAVIER (Recherche) ---
+
         if (modeRecherche && etatApp == 0) {
             // 1. Récupérer les caractères saisis
             int key = GetCharPressed();
