@@ -40,6 +40,11 @@ const int   CARTE_EPAISSEUR_BORD  = 3;
 Texture2D* mesTextures = NULL;          
 static int nbTexturesChargees = 0;
 static float scrollY = 0.0f;    
+static float scrollX_Top5 = 0.0f; 
+
+// Variables pour le Top 5
+static int indicesTop5[5] = {-1, -1, -1, -1, -1};
+static int estTop5Init = 0;
 
 /* FONCTIONS UTILITAIRES ================================================== */
 
@@ -96,6 +101,157 @@ static int dessinerCarreMenu(Rectangle rect, char* texte, Color couleurPrincipal
     DrawText(texte, posX, posY, taillePolice, RAYWHITE); // Texte en blanc pour lisibilité
 
     return estClique;
+}
+
+// --- HELPER : Gestion des Entrées ---
+static void gererInputsScroll(Rectangle zoneTop5, int afficherTop5, int nbFilms, int xAlign) {
+    float wheel = GetMouseWheelMove();
+    
+    // 1. Calcul des limites du scroll horizontal
+    int nbTop = (nbFilms < 5) ? nbFilms : 5;
+    // Largeur physique des cartes + marges (+50 pour bien fermer le cadre)
+    int largeurContenuTop5 = nbTop * (CARTE_LARGEUR + 15) + 100; 
+    
+    // La limite prend en compte le décalage d'alignement initial (xAlign)
+    int maxScrollX = (largeurContenuTop5 + xAlign) - (int)zoneTop5.width;
+    
+    // Sécurité : si le contenu est plus petit que l'écran, pas de scroll possible
+    if (maxScrollX < 0) maxScrollX = 0;
+
+    // IMPORTANT : Si on redimensionne la fenêtre et que tout rentre, on force le retour à 0
+    if (maxScrollX == 0) {
+        scrollX_Top5 = 0;
+    }
+
+    // Si pas de mouvement de souris, on s'arrête là (après avoir fait les vérifs de taille ci-dessus)
+    if (wheel == 0) return;
+
+    int sourisSurTop5 = afficherTop5 && CheckCollisionPointRec(GetMousePosition(), zoneTop5);
+
+    if (sourisSurTop5) {
+        // CAS 1 : Scroll HORIZONTAL (Souris sur le cadre vert)
+        scrollX_Top5 -= wheel * 20.0f; 
+        
+        // Bornage STRICT (Clamping)
+        // On empêche de dépasser 0 (gauche) et maxScrollX (droite)
+        // Cela fonctionne même si maxScrollX vaut 0 (ça bloque le scroll sur 0)
+        if (scrollX_Top5 < 0) scrollX_Top5 = 0;
+        if (scrollX_Top5 > maxScrollX) scrollX_Top5 = maxScrollX;
+        
+    } else {
+        // CAS 2 : Scroll VERTICAL (Souris ailleurs)
+        scrollY -= wheel * 20.0f; 
+    }
+}
+
+// --- HELPER : Dessin du Top 5 ---
+static int dessinerSectionTop5(t_catalogue catalogue, Rectangle zoneViewport, int startY, int xAlign) {
+    int filmClique = -1;
+    int nbFilms = getNbMedia(catalogue);
+    int nbTop = (nbFilms < 5) ? nbFilms : 5;
+    
+    // Largeur du contenu (+100 pour être large sur la fin)
+    int largeurContenu = nbTop * (CARTE_LARGEUR + 20) + 20; 
+    
+    // Création de la bande mobile
+    Rectangle rectBandeMobile = {
+        (float)(xAlign - scrollX_Top5),
+        zoneViewport.y,
+        (float)largeurContenu,
+        zoneViewport.height
+    };
+
+    // SCISSOR
+    BeginScissorMode((int)zoneViewport.x, (int)zoneViewport.y - 40, (int)zoneViewport.width, (int)zoneViewport.height + 50);
+
+        // Cadre et Titre
+        DrawRectangleLinesEx(rectBandeMobile, 4, GREEN);
+        DrawText("Top 5 des meilleurs films", (int)rectBandeMobile.x + 10, (int)rectBandeMobile.y - 30, 24, GREEN);
+
+        // Films
+        for (int i = 0; i < nbTop; i++) {
+            int idx = indicesTop5[i];
+            if (idx != -1) {
+                t_media m = getMediaCatalogue(catalogue, idx);
+                
+                Rectangle rectCarte = {
+                    (float)(rectBandeMobile.x + 20 + i * (CARTE_LARGEUR + 20)), 
+                    (float)(rectBandeMobile.y + 25), 
+                    (float)CARTE_LARGEUR,
+                    (float)CARTE_HAUTEUR
+                };
+
+                if (mesTextures != NULL) {
+                    if (GetMouseY() > startY) {
+                       if (dessinerCarteMedia(rectCarte, m, mesTextures[idx])) filmClique = idx;
+                    } else {
+                       dessinerCarteMedia(rectCarte, m, mesTextures[idx]);
+                    }
+                }
+            }
+        }
+    
+    EndScissorMode(); 
+
+    return filmClique;
+}
+
+static void initTop5(int nbTotalFilms) {
+    if (estTop5Init || nbTotalFilms == 0) return;
+    
+    int count = 0;
+    // Sécurité : si moins de 5 films, on prend tout ce qu'il y a
+    int maxFilms = (nbTotalFilms < 5) ? nbTotalFilms : 5;
+
+    while (count < maxFilms) {
+        int r = GetRandomValue(0, nbTotalFilms - 1);
+        
+        // Vérifie qu'on n'a pas déjà pris ce film pour éviter les doublons
+        int dejaPris = 0;
+        for (int i = 0; i < count; i++) {
+            if (indicesTop5[i] == r) dejaPris = 1;
+        }
+        
+        if (!dejaPris) {
+            indicesTop5[count] = r;
+            count++;
+        }
+    }
+    estTop5Init = 1;
+}
+
+// --- HELPER : Dessin de la Grille Principale ---
+static int dessinerSectionGrille(t_catalogue catalogue, int filtre, char* rech, int startX, int currentY, int cols, int espace, int startYHeader) {
+    int filmClique = -1;
+    int nbFilms = getNbMedia(catalogue);
+    int compteurAffiches = 0;
+
+    for (int i = 0; i < nbFilms; i++) {
+        t_media m = getMediaCatalogue(catalogue, i);
+        
+        if (mediaCorrespondCategorie(m, filtre) && mediaCorrespondRecherche(m, rech)) {
+            
+            int colonne = compteurAffiches % cols;
+            int ligne = compteurAffiches / cols;
+
+            Rectangle rectCarte;
+            rectCarte.x = (float)(startX + colonne * espace);
+            rectCarte.y = (float)(currentY + ligne * (CARTE_HAUTEUR + CARTE_PADDING)); // currentY inclut déjà le -scrollY
+            rectCarte.width = (float)CARTE_LARGEUR;
+            rectCarte.height = (float)CARTE_HAUTEUR;
+
+            if (mesTextures != NULL) {
+                // Protection clic header
+                if (GetMouseY() > startYHeader) {
+                    if (dessinerCarteMedia(rectCarte, m, mesTextures[i])) filmClique = i;
+                } else {
+                    dessinerCarteMedia(rectCarte, m, mesTextures[i]);
+                }
+            }
+            compteurAffiches++;
+        }
+    }
+    return filmClique;
 }
 
 /* FONCTIONS UI =========================================================== */
@@ -258,122 +414,97 @@ void dessinerBarreRecherche(char* bufferTexte, int estActif) {
 /* * Affiche la grille avec défilement vertical.
  * Retourne l'index du film cliqué, ou -1 si rien n'est cliqué.
  */
+/* Affiche la grille avec Top 5, Scroll et Filtres */
+/* Affiche la grille avec Top 5, Scroll et Filtres */
 int dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif, char* recherche) {
     
-    int filmClique = -1; // Par défaut, aucun clic
+    int filmClique = -1;
     int nbFilms = getNbMedia(catalogue);
-    
-// Dans affichage.c -> dessinerGrilleFiltree
+    initTop5(nbFilms);
 
-    // --- CONFIGURATION DYNAMIQUE & CENTRAGE ---
+    // --- 1. CONFIGURATION ---
     int startY = 180;
     int largeurFenetre = GetScreenWidth();
     int espaceTotalCarte = CARTE_LARGEUR + CARTE_PADDING;
-    int margeMinimale = 40;
-
-    // Calcul du nombre de colonnes possibles
-    int colonnesMax = (largeurFenetre - (margeMinimale * 2)) / espaceTotalCarte;
+    
+    // Calcul de la Grille (Centrée)
+    int colonnesMax = (largeurFenetre - 80) / espaceTotalCarte;
     if (colonnesMax < 1) colonnesMax = 1;
-
-    // CALCUL DU CENTRAGE (La formule magique)
+    
     int largeurContenu = colonnesMax * espaceTotalCarte;
-    int startX = (largeurFenetre - largeurContenu) / 2;
-    startX += CARTE_PADDING / 2; // Petit ajustement pour être pille au milieu
+    int startX = (largeurFenetre - largeurContenu) / 2 + CARTE_PADDING / 2;
 
-    // --- GESTION DU SCROLL ---
-    float wheel = GetMouseWheelMove();
-    if (wheel != 0) {
-        scrollY -= wheel * 20.0f; 
+    // --- 2. LOGIQUE TOP 5 ---
+    int afficherTop5 = (filtreActif == -1 && strlen(recherche) == 0 && nbFilms > 0);
+    int hauteurTop5 = afficherTop5 ? (CARTE_HAUTEUR + 90) : 0;
+    
+    // Point d'alignement : Le Top 5 commence là où commence la grille (-15px de marge interne)
+    int xTop5Align = startX - 20;
+
+    // ZONE DE DETECTION & DECOUPE : TOUTE LA LARGEUR DE L'ECRAN
+    // On définit une bande qui fait toute la largeur de l'écran (x=0, width=largeurFenetre)
+    // C'est ça qui permet de couper proprement aux bords de la fenêtre.
+    Rectangle zoneTop5 = { 
+        0,  
+        (float)(startY + 20 - scrollY), 
+        (float)largeurFenetre, 
+        (float)(CARTE_HAUTEUR + 50) 
+    };
+
+    // --- 3. INPUTS ---
+    gererInputsScroll(zoneTop5, afficherTop5, nbFilms, xTop5Align);
+    // --- 4. CALCUL HAUTEUR TOTALE & BORNES SCROLL VERTICAL ---
+    int nbAffichesFiltrees = 0;
+    for (int i = 0; i < nbFilms; i++) { 
+        t_media m = getMediaCatalogue(catalogue, i);
+        if (mediaCorrespondCategorie(m, filtreActif) && mediaCorrespondRecherche(m, recherche)) nbAffichesFiltrees++;
     }
     
-    // 2. Pré-calcul : Compter les films à afficher pour connaitre la hauteur totale
-    int nbAffichesFiltrees = 0;
-    for (int i = 0; i < nbFilms; i++) {
-        t_media m = getMediaCatalogue(catalogue, i);
-        if (mediaCorrespondCategorie(m, filtreActif) && mediaCorrespondRecherche(m, recherche)) {
-            nbAffichesFiltrees++;
-        }
-    }
-
-    // 3. Calcul des limites du scroll (Clamping)
-    int nbLignesNecessaires = (nbAffichesFiltrees + colonnesMax - 1) / colonnesMax;
-    int hauteurTotaleContenu = nbLignesNecessaires * (CARTE_HAUTEUR + CARTE_PADDING);
+    int nbLignesGrille = (nbAffichesFiltrees + colonnesMax - 1) / colonnesMax;
+    int hauteurGrille = (nbLignesGrille > 0) ? nbLignesGrille * (CARTE_HAUTEUR + CARTE_PADDING) : 0;
+    int hauteurTotaleContenu = hauteurTop5 + hauteurGrille + 20;
     int hauteurVisible = GetScreenHeight() - startY; 
     
-    int maxScroll = hauteurTotaleContenu - hauteurVisible + 20; // Marge du bas
-    if (maxScroll < 0) maxScroll = 0; // Pas de scroll nécessaire si peu de films
-
-    // On empêche de scroller trop haut ou trop bas
+    int maxScrollY = hauteurTotaleContenu - hauteurVisible; 
+    if (maxScrollY < 0) maxScrollY = 0;
     if (scrollY < 0) scrollY = 0;
-    if (scrollY > maxScroll) scrollY = maxScroll;
+    if (scrollY > maxScrollY) scrollY = maxScrollY;
 
-
-    // --- DESSIN (SCISSOR MODE) ---
-    
+    // --- 5. DESSIN ---
     BeginScissorMode(0, startY, largeurFenetre, hauteurVisible);
 
-    int compteurAffiches = 0;
-
-    for (int i = 0; i < nbFilms; i++) {
-        t_media m = getMediaCatalogue(catalogue, i);
-        
-        // On vérifie les filtres
-        int matchCategorie = mediaCorrespondCategorie(m, filtreActif);
-        int matchRecherche = mediaCorrespondRecherche(m, recherche);
-
-        if (matchCategorie && matchRecherche) {
+        // A. DESSIN TOP 5
+        if (afficherTop5) {
+            // On passe 'xTop5Align' pour savoir où dessiner le début de la bande verte
+            int clicTop5 = dessinerSectionTop5(catalogue, zoneTop5, startY, xTop5Align);
+            if (clicTop5 != -1) filmClique = clicTop5;
             
-            // Calcul de la position dans la grille
-            int colonne = compteurAffiches % colonnesMax;
-            int ligne = compteurAffiches / colonnesMax;
-
-            Rectangle rectCarte;
-            rectCarte.x = (float)(startX + colonne * espaceTotalCarte);
-            // C'est ici qu'on applique le décalage du scroll (- scrollY)
-            rectCarte.y = (float)(startY + ligne * (CARTE_HAUTEUR + CARTE_PADDING) - scrollY);
-            rectCarte.width = (float)CARTE_LARGEUR;
-            rectCarte.height = (float)CARTE_HAUTEUR;
-
-            if (mesTextures != NULL) {
-                // IMPORTANT : On vérifie si la souris est physiquement dans la zone de la liste
-                // pour éviter de cliquer sur un film caché sous le menu du haut
-                if (GetMouseY() > startY) {
-                    // Si on clique sur la carte, on sauvegarde l'ID
-                    if (dessinerCarteMedia(rectCarte, m, mesTextures[i])) {
-                        filmClique = i;
-                    }
-                } else {
-                    // Si la carte est sous le menu, on la dessine juste (sans interaction)
-                    dessinerCarteMedia(rectCarte, m, mesTextures[i]);
-                }
-            }
-            compteurAffiches++;
+            // IMPORTANT : On rétablit le scissor principal car dessinerSectionTop5 l'a coupé
+            BeginScissorMode(0, startY, largeurFenetre, hauteurVisible);
         }
-    }
-    
-    EndScissorMode(); // Fin de la zone de découpe
 
+        // B. DESSIN GRILLE
+        int currentYGrille = startY + hauteurTop5 - (int)scrollY;
+        int clicGrille = dessinerSectionGrille(catalogue, filtreActif, recherche, startX, currentYGrille, colonnesMax, espaceTotalCarte, startY);
+        if (clicGrille != -1) filmClique = clicGrille;
 
-    // --- BARRE DE DÉFILEMENT (VISUEL) ---
-    if (maxScroll > 0) {
-        int barreLargeur = 8;
-        int barreX = largeurFenetre - 12;
+    EndScissorMode();
+
+    // --- 6. BARRE SCROLL VERTICALE ---
+    if (maxScrollY > 0) {
+        int barreW = 10;
+        int barreX = largeurFenetre - 15;
+        float ratio = (float)hauteurVisible / (float)hauteurTotaleContenu;
+        if (ratio > 1.0f) ratio = 1.0f;
+        int barreH = (int)(hauteurVisible * ratio);
+        if (barreH < 30) barreH = 30;
+        float barreY = startY + (scrollY / maxScrollY) * (hauteurVisible - barreH);
         
-        // Taille de l'ascenseur proportionnelle au contenu
-        float ratio = (float)hauteurVisible / (hauteurTotaleContenu + hauteurVisible);
-        int barreHauteur = (int)(hauteurVisible * ratio);
-        if (barreHauteur < 30) barreHauteur = 30; // Taille minimale
-
-        // Position de l'ascenseur
-        float barreY = startY + (scrollY / maxScroll) * (hauteurVisible - barreHauteur);
-        
-        // Fond de la barre
-        DrawRectangle(barreX, startY, barreLargeur, hauteurVisible, Fade(LIGHTGRAY, 0.1f));
-        // L'ascenseur
-        DrawRectangle(barreX, (int)barreY, barreLargeur, barreHauteur, Fade(GRAY, 0.5f));
+        DrawRectangle(barreX, startY, barreW, hauteurVisible, Fade(WHITE, 0.1f));
+        DrawRectangle(barreX, (int)barreY, barreW, barreH, Fade(WHITE, 0.5f));
     }
 
-    return filmClique; // On renvoie l'ID au Main pour qu'il change de page
+    return filmClique;
 }
 
 // --- NOUVELLE FONCTION : PAGE DETAILS ---
