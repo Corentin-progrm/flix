@@ -30,7 +30,7 @@ int main(void)
     
     int filtreSelectionne = -1;     // Filtre catégorie
     char bufferRecherche[64] = {0}; // Texte recherche
-    int modeRecherche = 0;          // Barre de recherche visible ou non
+    int modeRecherche = 1;          // Barre de recherche visible ou non
 
     while (!WindowShouldClose()) 
     {
@@ -97,10 +97,8 @@ int main(void)
                 // B. Le Menu Catégories
                 int clicMenu = dessinerBarreCategories();
                 if (clicMenu != -1) {
-                    if (clicMenu == 1) { // Bouton Search
-                        modeRecherche = !modeRecherche;
-                        if (modeRecherche) filtreSelectionne = -1;
-                    } else { // Bouton Catégorie
+                    // On ne gère plus le bouton 1 (recherche) pour changer de mode
+                    if (clicMenu != 1) { 
                         filtreSelectionne = (filtreSelectionne == clicMenu) ? -1 : clicMenu;
                     }
                 }
