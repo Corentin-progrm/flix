@@ -24,13 +24,13 @@
 #define TAILLE_MAX_RECHERCHE 64
 
 // Utilisation de la couleur de fond centralisée
-const Color COLOR_BG_APP = { 255, 255, 255, 255 }; // Correspond à 0x141414FF
+const Color COLOR_BG_APP = { 25, 46, 3, 255 }; // Background application
 
 int main(void)
 {
     // Initialisation
     initInterface(LARGEUR_FENETRE, HAUTEUR_FENETRE, "NounaFlix");
-    animLogoStart();
+    //animLogoStart();
 
     t_catalogue catalogue = chargerBaseDeDonnees();
     chargerTexturesCatalogue(catalogue);

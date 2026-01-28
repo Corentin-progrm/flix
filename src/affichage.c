@@ -18,40 +18,40 @@
    ============================================================================ */
 
 // Thème Général et Fond
-const Color COLOR_ACCENT          = { 255, 255, 255, 255 };   // Rouge NounaFlix
+const Color COLOR_ACCENT            = { 230, 41, 55, 255 };     // RED Raylib
 
 // En-tête et Recherche
-const Color COLOR_HEADER_LINE     = { 255, 255, 255, 255 };
-const Color COLOR_SEARCH_BG       = { 255, 255, 255, 255 }; // RAYWHITE
-const Color COLOR_SEARCH_BORDER   = { 255, 255, 255, 255 }; // LIGHTGRAY
-const Color COLOR_SEARCH_TEXT     = { 255, 255, 255, 255 };
+const Color COLOR_HEADER_LINE       = { 0, 0, 0, 255 };         // BLACK Logo cadre
+const Color COLOR_SEARCH_BG         = { 53, 83, 14, 255 };      // Fond rectangle Recherche
+const Color COLOR_SEARCH_BORDER     = { 60, 99, 1, 255 };       // Bordure rectangle Recherche
+const Color COLOR_SEARCH_TEXT       = { 0, 0, 0, 255 };         // Texte Recherche...
 
 // Boutons Catégories (Mode Tuile)
-const Color COLOR_BTN_TXT         = { 255, 255, 255, 255 }; // RAYWHITE
-const Color COLOR_CAT_AJOUTER     = { 255, 255, 255, 255 }; // LIGHTGRAY
-const Color COLOR_CAT_FILM        = { 255, 255, 255, 255 };     // MAROON
-const Color COLOR_CAT_SERIE       = { 255, 255, 255, 255 };   // PURPLE
-const Color COLOR_CAT_AUTRE       = { 255, 255, 255, 255 };   // GOLD
-const Color COLOR_CAT_FAVORI      = { 255, 255, 255, 255 };   // GOLD
-const Color COLOR_CAT_RETOUR      = { 255, 255, 255, 255 };    // DARKGRAY
+const Color COLOR_BTN_TXT           = { 245, 245, 245, 255 };   // Texte boutons
+const Color COLOR_CAT_AJOUTER       = { 103, 14, 20, 255 };     // Cadre Menu Ajouter
+const Color COLOR_CAT_FILM          = { 103, 14, 64, 255 };     // Cadre Menu Film
+const Color COLOR_CAT_SERIE         = { 14, 103, 97, 255 };     // Cadre Menu Serie
+const Color COLOR_CAT_AUTRE         = { 103, 53, 14, 255 };     // Cadre Menu Autre
+const Color COLOR_CAT_FAVORI        = { 14, 20, 103, 255 };     // Cadre Menu Favoris
 
 // Cartes Média
-const Color COLOR_CARD_BG         = { 255, 255, 255, 255 };
-const Color COLOR_CARD_TITLE      = { 255, 255, 255, 255 };
-const Color COLOR_CARD_YEAR       = { 255, 255, 255, 255 };
-const Color COLOR_CARD_BORDER_OFF = { 255, 255, 255, 255 };
-const Color COLOR_CARD_BORDER_ON  = { 255, 255, 255, 255 };  // Rouge au survol
-
+const Color COLOR_CARD_BG           = { 53, 83, 14, 255 };      // Fond carte média
+const Color COLOR_CARD_TITLE        = { 245, 245, 245, 255 };   // Titre carte média
+const Color COLOR_CARD_YEAR         = { 200, 200, 200, 200 };   // Année carte média
+const Color COLOR_CARD_BORDER_OFF   = { 60, 99, 1, 255 };       // Bordure carte média
+const Color COLOR_CARD_BORDER_ON    = { 0, 0, 0, 255 };         // Bordure carte média hover
 // Page Détails
-const Color COLOR_DET_TITLE       = { 255, 255, 255, 255 };
-const Color COLOR_DET_LABEL       = { 255, 255, 255, 255 }; // Gris clair pour "Année :"
-const Color COLOR_DET_VALUE       = { 255, 255, 255, 255 }; // Blanc pour les valeurs
-const Color COLOR_DET_PLAY_BTN    = { 255, 255, 255, 255 };
-
+const Color COLOR_DET_TITLE         = { 245, 245, 245, 255 };   // Titre principal
+const Color COLOR_DET_LABEL         = { 245, 245, 245, 255 };   // Labels des champs
+const Color COLOR_DET_LINE          = { 60, 99, 1, 255 };       // Ligne de séparation
+const Color COLOR_DET_VALUE         = { 245, 245, 245, 255 };   // Valeurs des champs
+const Color COLOR_DET_PLAY_BTN_OFF  = { 60, 99, 1, 255 };       // Cadre Bouton Play
+const Color COLOR_DET_PLAY_BTN_ON   = { 0, 0, 0, 255 };         // Cadre Bouton Play hover
+const Color COLOR_CAT_RETOUR        = { 60, 99, 1, 255 };       // Cadre Bouton Retour
 // Sections Horizontales
-const Color COLOR_HORZ_FILM       = { 255, 255, 255, 255 };
-const Color COLOR_HORZ_SERIE      = { 255, 255, 255, 255 };
-const Color COLOR_HORZ_LAST       = { 255, 255, 255, 255 };
+const Color COLOR_HORZ_FILM       = { 103, 14, 64, 255 };       // Section Top 5 Films
+const Color COLOR_HORZ_SERIE      = { 14, 103, 97, 255 };       // Section Top 5 Series
+const Color COLOR_HORZ_LAST       = { 103, 53, 14, 255 };       // Section Derniers Vus
 
 #define CHEMIN_IMAGES "assets/images/%s.jpg"
 
@@ -465,7 +465,7 @@ int dessinerPageDetails(t_media m, Texture2D affiche) {
 
     // Titre principal
     DrawText(getTitre(m), textX, textY, 40, COLOR_DET_TITLE);
-    DrawLine(textX, textY + 50, GetScreenWidth() - 50, textY + 50, COLOR_ACCENT);
+    DrawLine(textX, textY + 50, GetScreenWidth() - 50, textY + 50, COLOR_DET_LINE);
 
     textY += 70;
     int ecart = 35;
@@ -488,9 +488,9 @@ int dessinerPageDetails(t_media m, Texture2D affiche) {
 
     // Bouton de Lecture
     Rectangle btnPlay = { (float)textX, (float)textY + 60, 200, 60 };
-    Color colBtn = COLOR_ACCENT;
+    Color colBtn = COLOR_DET_PLAY_BTN_OFF;
     if (CheckCollisionPointRec(GetMousePosition(), btnPlay)) {
-        colBtn = COLOR_DET_PLAY_BTN; // Assombrir au survol
+        colBtn = COLOR_DET_PLAY_BTN_ON; // Assombrir au survol
         if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) action = 2;
     }
     
