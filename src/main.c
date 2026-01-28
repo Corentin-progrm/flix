@@ -13,118 +13,102 @@
 #include "affichage.h"
 #include "storage.h"
 
+// États de l'application
+#define ETAT_ACCUEIL 0
+#define ETAT_DETAILS 1
+
+// Configuration
+#define LARGEUR_FENETRE 1024
+#define HAUTEUR_FENETRE 768
+#define HAUTEUR_HEADER 180
+#define TAILLE_MAX_RECHERCHE 64
+
+// Utilisation de la couleur de fond centralisée
+const Color COLOR_BG_APP = { 255, 255, 255, 255 }; // Correspond à 0x141414FF
+
 int main(void)
 {
-    // 1. Initialisation
-    initInterface(1024, 768, "NounaFlix");
-    
-    // Animation d'intro
+    // Initialisation
+    initInterface(LARGEUR_FENETRE, HAUTEUR_FENETRE, "NounaFlix");
     animLogoStart();
 
     t_catalogue catalogue = chargerBaseDeDonnees();
     chargerTexturesCatalogue(catalogue);
 
-    // 2. Gestion des États
-    int etatApp = 0;                // 0 = ACCUEIL, 1 = DETAILS
-    int indexFilmChoisi = -1;       // Quel film afficher en détail
+    // États de l'application
+    int etatApp = ETAT_ACCUEIL;
+    int indexFilmChoisi = -1;
     
-    int filtreSelectionne = -1;     // Filtre catégorie
-    char bufferRecherche[64] = {0}; // Texte recherche
-    int modeRecherche = 1;          // Barre de recherche visible ou non
+    int filtreSelectionne = -1;
+    char bufferRecherche[TAILLE_MAX_RECHERCHE] = {0};
+    int modeRecherche = 1;
 
+    // Boucle principale
     while (!WindowShouldClose()) 
     {
-
-        if (modeRecherche && etatApp == 0) {
-            // 1. Récupérer les caractères saisis
+        // Gestion de la saisie de recherche
+        if (modeRecherche && etatApp == ETAT_ACCUEIL) {
             int key = GetCharPressed();
             
             while (key > 0) {
-                // On accepte uniquement les caractères imprimables (ASCII 32 à 125)
-                // et on vérifie qu'il reste de la place dans le buffer (max 63 chars)
-                if ((key >= 32) && (key <= 125) && (strlen(bufferRecherche) < 63)) {
+                if ((key >= 32) && (key <= 125) && (strlen(bufferRecherche) < TAILLE_MAX_RECHERCHE - 1)) {
                     int len = strlen(bufferRecherche);
                     bufferRecherche[len] = (char)key;
-                    bufferRecherche[len + 1] = '\0'; // Toujours terminer par \0
+                    bufferRecherche[len + 1] = '\0';
                 }
-                key = GetCharPressed(); // On vérifie s'il y a d'autres touches en attente
+                key = GetCharPressed();
             }
 
-            // 2. Gestion de la touche Effacer (Backspace)
             if (IsKeyPressed(KEY_BACKSPACE)) {
                 int len = strlen(bufferRecherche);
-                if (len > 0) bufferRecherche[len - 1] = '\0'; // On raccourcit la chaîne
+                if (len > 0) bufferRecherche[len - 1] = '\0';
             }
         }
 
-        // --- AFFICHAGE ---
+        // Rendu
         BeginDrawing();
+        ClearBackground(COLOR_BG_APP); 
+
+        if (etatApp == ETAT_ACCUEIL) {
             
-            ClearBackground(GetColor(0x141414FF)); 
-
-            // === PAGE D'ACCUEIL ===
-            if (etatApp == 0) {
-                
-                // ---------------------------------------------------------
-                // ÉTAPE 1 : LA COUCHE DU FOND (Les Films)
-                // ---------------------------------------------------------
-                // On dessine la grille en PREMIER.
-                // Si le ScissorMode rate ou si ça dépasse, ce n'est pas grave,
-                // car on va redessiner par-dessus juste après.
-                
-                int idClique = dessinerGrilleFiltree(catalogue, filtreSelectionne, bufferRecherche);
-                
-                if (idClique != -1) {
-                    indexFilmChoisi = idClique;
-                    etatApp = 1;
-                }
-
-                // ---------------------------------------------------------
-                // ÉTAPE 2 : LE "CACHE" OPAQUE
-                // ---------------------------------------------------------
-                // On dessine un rectangle de la couleur du fond qui couvre TOUTE
-                // la zone du haut (Header + Menu + Recherche).
-                // Hauteur 180 = C'est ton startY défini dans affichage.c
-                DrawRectangle(0, 0, GetScreenWidth(), 180, GetColor(0x141414FF));
-
-                // ---------------------------------------------------------
-                // ÉTAPE 3 : L'INTERFACE FIXE (Header + Menu + Recherche)
-                // ---------------------------------------------------------
-                
-                // A. L'En-tête (Logo + Titre)
-                dessinerEnTete();
-
-                // B. Le Menu Catégories
-                int clicMenu = dessinerBarreCategories();
-                if (clicMenu != -1) {
-                    // On ne gère plus le bouton 1 (recherche) pour changer de mode
-                    if (clicMenu != 1) { 
-                        filtreSelectionne = (filtreSelectionne == clicMenu) ? -1 : clicMenu;
-                    }
-                }
-
-                // C. La Barre de Recherche (si active)
-                if (modeRecherche) {
-                    dessinerBarreRecherche(bufferRecherche);
-                }
+            // Grille de films (arrière-plan)
+            int idClique = dessinerGrilleFiltree(catalogue, filtreSelectionne, bufferRecherche);
+            
+            if (idClique != -1) {
+                indexFilmChoisi = idClique;
+                etatApp = ETAT_DETAILS;
             }
 
-            // === PAGE DETAILS (Reste inchangé car il couvre tout l'écran) ===
-            else if (etatApp == 1) {
-                if (indexFilmChoisi >= 0) {
-                    t_media m = getMediaCatalogue(catalogue, indexFilmChoisi);
-                    int action = dessinerPageDetails(m, mesTextures[indexFilmChoisi]);
+            // Cache pour masquer le scroll
+            DrawRectangle(0, 0, GetScreenWidth(), HAUTEUR_HEADER, COLOR_BG_APP);
 
-                    if (action == 1) etatApp = 0;
-                    if (action == 2) lancerVideo(m);
-                }
+            // Interface fixe (header + menu + recherche)
+            dessinerEnTete();
+
+            int clicMenu = dessinerBarreCategories();
+            if (clicMenu != -1 && clicMenu != 1) {
+                filtreSelectionne = (filtreSelectionne == clicMenu) ? -1 : clicMenu;
             }
+
+            if (modeRecherche) {
+                dessinerBarreRecherche(bufferRecherche);
+            }
+        }
+        else if (etatApp == ETAT_DETAILS) {
+            
+            if (indexFilmChoisi >= 0) {
+                t_media m = getMediaCatalogue(catalogue, indexFilmChoisi);
+                int action = dessinerPageDetails(m, mesTextures[indexFilmChoisi]);
+
+                if (action == 1) etatApp = ETAT_ACCUEIL;
+                if (action == 2) lancerVideo(m);
+            }
+        }
 
         EndDrawing();
     }
-// ... fin du main identique ...
 
-    // 4. Nettoyage
+    // Nettoyage
     libererTexturesCatalogue();
     freeCatalogue(catalogue);
     fermerInterface();
