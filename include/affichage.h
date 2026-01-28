@@ -49,7 +49,7 @@ int dessinerCarteMedia(Rectangle rect, t_media m, Texture2D miniature);
 int dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif, char* recherche);
 
 // Affiche la barre de recherche avec le texte courant
-void dessinerBarreRecherche(char* bufferTexte, int estActif);
+void dessinerBarreRecherche(char* bufferTexte);
 
 // Affiche la page de détails d'un média.
 int dessinerPageDetails(t_media m, Texture2D affiche);

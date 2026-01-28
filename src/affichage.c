@@ -5,7 +5,7 @@
  * Date : 07-01-2026
  * Description : Le module affichage gère toutes les fonctions
  *               d'affichage du programme, y compris les menus
- *              et les détails des medias.
+ *              et les détails des mediass.
 **/
 
 /* LIBRARY ================================================================ */
@@ -42,10 +42,6 @@ Texture2D* mesTextures = NULL;
 static int nbTexturesChargees = 0;
 static float scrollY = 0.0f;    
 
-// Variables de Scroll Horizontal (Une par section)
-static float scrollX_Top5 = 0.0f; 
-static float scrollX_Series = 0.0f; 
-static float scrollX_Last = 0.0f; 
 
 // Variables de Sélection (Les indices des films à afficher)
 static int indicesTop5[5] = {-1, -1, -1, -1, -1};
@@ -111,73 +107,6 @@ static int dessinerCarreMenu(Rectangle rect, char* texte, Color couleurPrincipal
     return estClique;
 }
 
-// --- HELPER : Gestion des Entrées ---
-static void gererInputsScroll(Rectangle zoneTop5, int afficherTop5, int nbFilms, int xAlign) {
-    float wheel = GetMouseWheelMove();
-    
-    // 1. Calcul des limites du scroll horizontal
-    int nbTop = (nbFilms < 5) ? nbFilms : 5;
-    // Largeur physique des cartes + marges (+50 pour bien fermer le cadre)
-    int largeurContenuTop5 = nbTop * (CARTE_LARGEUR + 15) + 100; 
-    
-    // La limite prend en compte le décalage d'alignement initial (xAlign)
-    int maxScrollX = (largeurContenuTop5 + xAlign) - (int)zoneTop5.width;
-    
-    // Sécurité : si le contenu est plus petit que l'écran, pas de scroll possible
-    if (maxScrollX < 0) maxScrollX = 0;
-
-    // IMPORTANT : Si on redimensionne la fenêtre et que tout rentre, on force le retour à 0
-    if (maxScrollX == 0) {
-        scrollX_Top5 = 0;
-    }
-
-    // Si pas de mouvement de souris, on s'arrête là (après avoir fait les vérifs de taille ci-dessus)
-    if (wheel == 0) return;
-
-    int sourisSurTop5 = afficherTop5 && CheckCollisionPointRec(GetMousePosition(), zoneTop5);
-
-    if (sourisSurTop5) {
-        // CAS 1 : Scroll HORIZONTAL (Souris sur le cadre vert)
-        scrollX_Top5 -= wheel * 20.0f; 
-        
-        // Bornage STRICT (Clamping)
-        // On empêche de dépasser 0 (gauche) et maxScrollX (droite)
-        // Cela fonctionne même si maxScrollX vaut 0 (ça bloque le scroll sur 0)
-        if (scrollX_Top5 < 0) scrollX_Top5 = 0;
-        if (scrollX_Top5 > maxScrollX) scrollX_Top5 = maxScrollX;
-        
-    } else {
-        // CAS 2 : Scroll VERTICAL (Souris ailleurs)
-        scrollY -= wheel * 20.0f; 
-    }
-}
-
-// Retourne 1 si un scroll horizontal a eu lieu, 0 sinon
-static int gererScrollHorizontal(Rectangle zone, float* scrollVar, int nbFilms, int xAlign) {
-    float wheel = GetMouseWheelMove();
-    if (wheel == 0) return 0; // Pas de mouvement
-
-    // Calcul des limites
-    int nbTop = (nbFilms < 5) ? nbFilms : 5;
-    int largeurContenu = nbTop * (CARTE_LARGEUR + 15) + 100; 
-    int maxScrollX = (largeurContenu + xAlign) - (int)zone.width;
-    if (maxScrollX < 0) maxScrollX = 0;
-
-    // Reset si redimensionnement
-    if (maxScrollX == 0) *scrollVar = 0;
-
-    // Vérification Souris
-    if (CheckCollisionPointRec(GetMousePosition(), zone)) {
-        *scrollVar -= wheel * 20.0f; 
-        
-        // Bornage
-        if (*scrollVar < 0) *scrollVar = 0;
-        if (*scrollVar > maxScrollX) *scrollVar = maxScrollX;
-        
-        return 1; // On a consommé l'événement scroll
-    }
-    return 0;
-}
 
 static int dessinerSectionHorizontale(t_catalogue catalogue, Rectangle zoneViewport, int startY, int xAlign, 
                                       char* titre, Color couleur, int* indices, float scrollX) {
@@ -227,57 +156,6 @@ static int dessinerSectionHorizontale(t_catalogue catalogue, Rectangle zoneViewp
 }
 
 
-// --- HELPER : Dessin du Top 5 ---
-static int dessinerSectionTop5(t_catalogue catalogue, Rectangle zoneViewport, int startY, int xAlign) {
-    int filmClique = -1;
-    int nbFilms = getNbMedia(catalogue);
-    int nbTop = (nbFilms < 5) ? nbFilms : 5;
-    
-    // Largeur du contenu (+100 pour être large sur la fin)
-    int largeurContenu = nbTop * (CARTE_LARGEUR + 20) + 20; 
-    
-    // Création de la bande mobile
-    Rectangle rectBandeMobile = {
-        (float)(xAlign - scrollX_Top5),
-        zoneViewport.y,
-        (float)largeurContenu,
-        zoneViewport.height
-    };
-
-    // SCISSOR
-    BeginScissorMode((int)zoneViewport.x, (int)zoneViewport.y - 40, (int)zoneViewport.width, (int)zoneViewport.height + 50);
-
-        // Cadre et Titre
-        DrawRectangleLinesEx(rectBandeMobile, 4, GREEN);
-        DrawText("Top 5 des meilleurs films", (int)rectBandeMobile.x + 10, (int)rectBandeMobile.y - 30, 24, GREEN);
-
-        // Films
-        for (int i = 0; i < nbTop; i++) {
-            int idx = indicesTop5[i];
-            if (idx != -1) {
-                t_media m = getMediaCatalogue(catalogue, idx);
-                
-                Rectangle rectCarte = {
-                    (float)(rectBandeMobile.x + 20 + i * (CARTE_LARGEUR + 20)), 
-                    (float)(rectBandeMobile.y + 25), 
-                    (float)CARTE_LARGEUR,
-                    (float)CARTE_HAUTEUR
-                };
-
-                if (mesTextures != NULL) {
-                    if (GetMouseY() > startY) {
-                       if (dessinerCarteMedia(rectCarte, m, mesTextures[idx])) filmClique = idx;
-                    } else {
-                       dessinerCarteMedia(rectCarte, m, mesTextures[idx]);
-                    }
-                }
-            }
-        }
-    
-    EndScissorMode(); 
-
-    return filmClique;
-}
 
 // Remplit un tableau donné avec 5 indices au hasard
 static void remplirSelectionAleatoire(int* tableau, int nbTotal) {
@@ -388,7 +266,7 @@ void chargerTexturesCatalogue(t_catalogue catalogue) {
         }
     }
 }
-
+ 
 void libererTexturesCatalogue(void) {
     if (mesTextures != NULL) {
         for (int i = 0; i < nbTexturesChargees; i++) {
@@ -488,7 +366,7 @@ int dessinerCarteMedia(Rectangle rect, t_media m, Texture2D miniature) {
 }
 
 // Affiche le champ de saisie
-void dessinerBarreRecherche(char* bufferTexte, int estActif) {
+void dessinerBarreRecherche(char* bufferTexte) {
     int largeur = 400;
     int x = (GetScreenWidth() - largeur) / 2;
     int y = 120; 

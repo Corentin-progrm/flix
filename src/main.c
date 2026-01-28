@@ -105,7 +105,7 @@ int main(void)
 
                 // C. La Barre de Recherche (si active)
                 if (modeRecherche) {
-                    dessinerBarreRecherche(bufferRecherche, 1);
+                    dessinerBarreRecherche(bufferRecherche);
                 }
             }
 
