@@ -25,6 +25,7 @@ struct media{
     int annee_sortie; 
     int duree; 
     char *auteur;
+    char *parent;
 };
 
 struct catalogue {
@@ -51,6 +52,7 @@ t_media creer_media(void) {
         media->auteur = NULL;
         media->annee_sortie = 0; 
         media->duree = 0;
+        media->parent = NULL;
     }
     
     return media;
@@ -179,6 +181,20 @@ char* getAuteur(t_media media) {
 }
 
 /**
+ * @fonction getParent()
+ * @brief Retourne le parent du media.
+ * @param  media    Le media dont on veut obtenir le parent.
+ * @return char*    Le parent du media.
+ */
+char* getParent(t_media media) {
+    if (media) {
+        return media->parent;
+    } else {
+        return NULL;
+    }
+}
+
+/**
  * @fonction get_media_catalogue()
  * @brief Retourne le media à l'index donné dans le catalogue.
  * @param  catalogue    Le catalogue contenant les medias.
@@ -273,6 +289,19 @@ void setDuree(t_media media, int nouvelleDuree) {
 }
 
 /**
+ * @fonction setParent()
+ * @brief Définit le parent du media.
+ * @param  media          Le media dont on veut définir le parent.
+ * @param  nouveauParent  Le nouveau parent à définir.
+ */
+void setParent(t_media media, char* nouveauParent) {
+    if (media->parent != NULL) {
+        free(media->parent);
+    }
+    media->parent = strdup(nouveauParent);
+}
+
+/**
  * @fonction setNbMedia()
  * @brief Définit le nombre de medias dans le catalogue.
  * @param  catalogue     Le catalogue dont on veut définir le nombre de medias.
@@ -307,6 +336,7 @@ void freeMedia(t_media media) {
     if (media->type) free(media->type);
     if (media->titre) free(media->titre);
     if (media->auteur) free(media->auteur);
+    if (media->parent) free(media->parent);
     free(media);
 }
 
