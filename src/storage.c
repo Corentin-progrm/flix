@@ -181,3 +181,5 @@ int mediaCorrespondRecherche(t_media m, char* texteRecherche) {
     return texteContient(getTitre(m), texteRecherche);
 }
 
+
+

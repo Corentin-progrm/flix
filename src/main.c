@@ -24,7 +24,7 @@
 #define TAILLE_MAX_RECHERCHE 64
 
 // Utilisation de la couleur de fond centralisée
-const Color COLOR_BG_APP = { 25, 46, 3, 255 }; // Background application
+const Color COLOR_BG_APP = { 51, 56, 61, 255 }; // Background application
 
 int main(void)
 {
