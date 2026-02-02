@@ -81,21 +81,21 @@ t_catalogue chargerBaseDeDonnees(void) {
     // Lecture ligne par ligne du fichier
     while (compteur < max_taille && fgets(ligne, sizeof(ligne), fichier)) {
         
-        char tCode[50], tType[50], tTitre[100], tAuteur[100], tParent[100];
+        char tCode[50], tType[50], tTitre[100], tAuteur[100];
         int tAnnee; 
         int tDuree;
 
         // Parsing (Découpage de la ligne)
-        int n = sscanf(ligne, "%[^;];%[^;];%[^;];%d;%d;%[^;];%[^\n]", 
-                       tCode, tType, tTitre, &tAnnee, &tDuree, tAuteur, tParent);
+        int n = sscanf(ligne, "%[^;];%[^;];%[^;];%d;%d;%[^\n]", 
+                       tCode, tType, tTitre, &tAnnee, &tDuree, tAuteur);
 
-        // Si la ligne est bien formée (7 éléments trouvés)
-        if (n == 7) {
+        // Si la ligne est bien formée (6 éléments trouvés)
+        if (n == 6) {
             // Construction du chemin de la vidéo
             sprintf(cheminVideo, CHEMIN_MEDIAS, tCode);
             
             // On vérifie si la vidéo existe réellement
-            if (fichierExiste(cheminVideo) || strcmp(tParent, "NULL") == 0) {
+            if (fichierExiste(cheminVideo)) {
                 
                 // Création et remplissage du media
                 t_media m = creer_media();
@@ -105,11 +105,6 @@ t_catalogue chargerBaseDeDonnees(void) {
                 setAnnee(m, tAnnee);
                 setDuree(m, tDuree);
                 setAuteur(m, tAuteur);
-
-                // Gestion du parent
-                if (strcmp(tParent, "NULL") != 0) {
-                    setParent(m, tParent);
-                }
                 
                 // On ajoute au catalogue
                 setMediaCatalogue(catalogue, m, compteur);
@@ -130,17 +125,17 @@ t_catalogue chargerBaseDeDonnees(void) {
 
 
 int mediaCorrespondCategorie(t_media m, int indexMenu) {
-
-    char* typeMedia = getType(m);
-    char* parentMedia = getParent(m);
-
-    // On affiche pas si c'est un episode (parent non NULL)
-    if (parentMedia != NULL) return 0;
-
-    // On affiche le media par defaut
+    
+    // Si aucun filtre n'est actif (-1) ou si on clique sur Search(1) ou Ajouter(0),
+    // on décide d'afficher TOUT par défaut (ou on gère autrement).
+    // Ici, disons que si on n'a pas cliqué sur une catégorie précise, on montre tout.
     if (indexMenu == -1 || indexMenu == 0 || indexMenu == 1) return 1;
 
-    // MAPPING DES BOUTONS
+    // Récupération du type de média (Assure-toi d'avoir cette info dans ta struct)
+    // Sinon, remplace getGenre(m) par le champ approprié
+    char* typeMedia = getType(m); 
+
+    // MAPPING DES BOUTONS (Selon l'ordre dans ta fonction dessinerBarreCategories)
     // 2 = "Film"
     if (indexMenu == 2) {
         if (strcmp(typeMedia, "Film") == 0) return 1;
@@ -186,47 +181,5 @@ int mediaCorrespondRecherche(t_media m, char* texteRecherche) {
     return texteContient(getTitre(m), texteRecherche);
 }
 
-/**
- * @fonction suggestionMedia()
- * @brief Retourne un catalogue de suggestions basé sur un média source.
- * @param catalogue  Le catalogue complet (source de données).
- * @param m_origine  Le média que l'utilisateur regarde ou a cliqué.
- * @return t_catalogue Un catalogue contenant les suggestions.
- */
-t_catalogue suggestionMedia(t_catalogue catalogue, t_media m_origine) {
-    t_catalogue suggestions = creer_catalogue();
-    int nbTotal = getNbMedia(catalogue);
-    allouerTableauMedia(suggestions, nbTotal);
-    
-    int compteur = 0;
-    char* typeOrigine = getType(m_origine);
-    char* codeOrigine = getCode(m_origine);
 
-    for (int i = 0; i < nbTotal; i++) {
-        t_media m_test = getMediaCatalogue(catalogue, i);
-        
-        // On ne se suggère pas soi-même
-        if (strcmp(getCode(m_test), codeOrigine) == 0) continue;
-
-        // --- CAS 1 : SÉRIE -> On suggère les épisodes (Logique Parent-Enfant) ---
-        if (strcmp(typeOrigine, "Serie") == 0) {
-            char* parent = getParent(m_test);
-            if (parent != NULL && strcmp(parent, codeOrigine) == 0) {
-                setMediaCatalogue(suggestions, m_test, compteur++);
-            }
-        }
-        
-        // --- CAS 2 : FILM -> On suggère des films du même auteur (Future-proof) ---
-        else if (strcmp(typeOrigine, "Film") == 0) {
-            // Exemple simple : même auteur
-            if (strcmp(getType(m_test), "Film") == 0 && 
-                strcmp(getAuteur(m_test), getAuteur(m_origine)) == 0) {
-                setMediaCatalogue(suggestions, m_test, compteur++);
-            }
-        }
-    }
-
-    setNbMedia(suggestions, compteur);
-    return suggestions;
-}
 
