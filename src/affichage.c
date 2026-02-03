@@ -448,39 +448,32 @@ int dessinerPageDetails(t_media m, Texture2D affiche, t_catalogue catalogue, Tex
     int action = 0;
 
     // --- 1. CALCULS PRÉALABLES POUR LE SCROLL ---
-    // On récupère les données pour connaître la hauteur totale
     t_media sugg[5];
     int nbSugg = (strcmp(getType(m), "Film") == 0) ? recupererSuggestions(catalogue, m, sugg) : 0;
     
     t_media epis[100];
     int nbEpi = (strcmp(getType(m), "Serie") == 0) ? recupererEpisodesSerie(catalogue, getCode(m), epis) : 0;
 
-    // Calcul de la hauteur totale du contenu
-    int hauteurInfos = 450 + 50; // Affiche (450) + Espace vers le trait (50)
+    int hauteurInfos = 450 + 50; 
     int hauteurDynamique = 0;
 
     if (nbSugg > 0) {
-        hauteurDynamique = 350; // Titre + une ligne d'affiches + marges
+        hauteurDynamique = 350; 
     } else if (nbEpi > 0) {
         int nbLignes = (nbEpi + 4) / 5;
-        hauteurDynamique = 40 + (nbLignes * 280); // Titre + grille d'épisodes
+        hauteurDynamique = 40 + (nbLignes * 280); 
     }
 
     int hauteurTotaleContenu = hauteurInfos + hauteurDynamique;
-    int hauteurVisible = GetScreenHeight() - 140; // Zone sous le header/bouton retour
+    int hauteurVisible = GetScreenHeight() - 140;
     int limiteBasse = hauteurVisible - hauteurTotaleContenu;
 
-    // Gestion du scroll avec limites
     scrollYDetails += GetMouseWheelMove() * 45;
-    
-    // Limite haute
     if (scrollYDetails > 0) scrollYDetails = 0;
-    
-    // Limite basse (seulement si le contenu dépasse de l'écran)
     if (limiteBasse < 0) {
         if (scrollYDetails < limiteBasse) scrollYDetails = (float)limiteBasse;
     } else {
-        scrollYDetails = 0; // Pas de scroll si tout tient dans l'écran
+        scrollYDetails = 0;
     }
 
     int offsetScroll = (int)scrollYDetails;
@@ -492,7 +485,7 @@ int dessinerPageDetails(t_media m, Texture2D affiche, t_catalogue catalogue, Tex
         int imgW = 300, imgH = 450;
         Rectangle rectImage = { 50, (float)startY, (float)imgW, (float)imgH };
 
-        // Affiche et Détails
+        // Affiche principale et Infos
         DrawRectangle(55, startY + 5, imgW, imgH, Fade(BLACK, 0.4f));
         DrawRectangleRec(rectImage, BLACK);
         redimensionTextureMedia(affiche, rectImage);
@@ -515,7 +508,6 @@ int dessinerPageDetails(t_media m, Texture2D affiche, t_catalogue catalogue, Tex
         DrawText("Auteur :", textX, textY, 20, COLOR_DET_LABEL);
         DrawText(getAuteur(m), textX + 150, textY, 20, COLOR_DET_VALUE);
 
-        // Bouton Lecture
         if (strcmp(getType(m), "Serie") != 0) {
             Rectangle btnPlay = { (float)textX, (float)textY + 60, 200, 60 };
             Color colBtn = CheckCollisionPointRec(GetMousePosition(), btnPlay) ? COLOR_DET_PLAY_BTN_ON : COLOR_DET_PLAY_BTN_OFF;
@@ -524,32 +516,40 @@ int dessinerPageDetails(t_media m, Texture2D affiche, t_catalogue catalogue, Tex
             if (CheckCollisionPointRec(GetMousePosition(), btnPlay) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) action = 2;
         }
 
-        // Suggestions / Épisodes
+        // --- SECTION SUGGESTIONS / ÉPISODES CORRIGÉE ---
         int zoneY = startY + imgH + 50;
         DrawLine(50, zoneY - 20, GetScreenWidth() - 50, zoneY - 20, COLOR_DET_LINE);
-        float cibleW = 150.0f, cibleH = 225.0f;
 
         if (nbSugg > 0) {
             DrawText("DU MEME AUTEUR :", 50, zoneY, 20, COLOR_DET_LABEL);
             for (int i = 0; i < nbSugg; i++) {
-                int posX = 50 + (i * 180), posY = zoneY + 40;
-                int idx = -1;
-                for(int j=0; j<getNbMedia(catalogue); j++) { if(getMediaCatalogue(catalogue, j) == sugg[i]) { idx = j; break; } }
-                if (idx != -1) {
-                    float scale = cibleW / toutesTextures[idx].width;
-                    DrawTextureEx(toutesTextures[idx], (Vector2){(float)posX, (float)posY}, 0, scale, WHITE);
-                    DrawText(getTitre(sugg[i]), posX, posY + (int)cibleH + 10, 12, COLOR_DET_VALUE);
+                float posX = 50 + (i * 180); 
+                float posY = (float)zoneY + 40;
+                
+                int idxTex = -1;
+                for(int j=0; j < getNbMedia(catalogue); j++) {
+                    if(getMediaCatalogue(catalogue, j) == sugg[i]) { idxTex = j; break; }
+                }
+
+                if (idxTex != -1) {
+                    // Correction : Rectangle, puis t_media, puis Texture
+                    Rectangle r = { posX, posY, 150, 225 };
+                    dessinerCarteMedia(r, sugg[i], toutesTextures[idxTex]);
                 }
             }
         } else if (nbEpi > 0) {
             DrawText("EPISODES :", 50, zoneY, 20, COLOR_DET_LABEL);
             for (int i = 0; i < nbEpi; i++) {
-                int col = i % 5, row = i / 5;
-                int posX = 50 + (col * 180), posY = zoneY + 40 + (row * 280);
-                float scale = cibleW / affiche.width;
-                DrawTextureEx(affiche, (Vector2){(float)posX, (float)posY}, 0, scale, WHITE);
-                DrawText(getTitre(epis[i]), posX, posY + (int)cibleH + 10, 12, COLOR_DET_VALUE);
-                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){(float)posX, (float)posY, cibleW, cibleH}) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) lancerVideo(epis[i]);
+                int col = i % 5;
+                int row = i / 5;
+                float posX = 50 + (col * 180);
+                float posY = (float)zoneY + 40 + (row * 280);
+
+                Rectangle r = { posX, posY, 150, 225 };
+                // Pour les épisodes, on utilise l'affiche de la série parente
+                if (dessinerCarteMedia(r, epis[i], affiche)) {
+                    lancerVideo(epis[i]);
+                }
             }
         }
 
