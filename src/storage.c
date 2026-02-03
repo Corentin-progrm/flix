@@ -81,21 +81,21 @@ t_catalogue chargerBaseDeDonnees(void) {
     // Lecture ligne par ligne du fichier
     while (compteur < max_taille && fgets(ligne, sizeof(ligne), fichier)) {
         
-        char tCode[50], tType[50], tTitre[100], tAuteur[100];
+        char tCode[50], tType[50], tTitre[100], tAuteur[100], tParent[100];
         int tAnnee; 
         int tDuree;
 
         // Parsing (Découpage de la ligne)
-        int n = sscanf(ligne, "%[^;];%[^;];%[^;];%d;%d;%[^\n]", 
-                       tCode, tType, tTitre, &tAnnee, &tDuree, tAuteur);
+        int n = sscanf(ligne, "%[^;];%[^;];%[^;];%d;%d;%[^;];%[^\n]", 
+                       tCode, tType, tTitre, &tAnnee, &tDuree, tAuteur, tParent);
 
-        // Si la ligne est bien formée (6 éléments trouvés)
-        if (n == 6) {
+        // Si la ligne est bien formée (7 éléments trouvés)
+        if (n == 7) {
             // Construction du chemin de la vidéo
             sprintf(cheminVideo, CHEMIN_MEDIAS, tCode);
             
             // On vérifie si la vidéo existe réellement
-            if (fichierExiste(cheminVideo)) {
+            if (fichierExiste(cheminVideo) || strcmp(tType, "Serie") == 0) {
                 
                 // Création et remplissage du media
                 t_media m = creer_media();
@@ -105,6 +105,7 @@ t_catalogue chargerBaseDeDonnees(void) {
                 setAnnee(m, tAnnee);
                 setDuree(m, tDuree);
                 setAuteur(m, tAuteur);
+                setParent(m, tParent);
                 
                 // On ajoute au catalogue
                 setMediaCatalogue(catalogue, m, compteur);
@@ -181,5 +182,56 @@ int mediaCorrespondRecherche(t_media m, char* texteRecherche) {
     return texteContient(getTitre(m), texteRecherche);
 }
 
+/**
+ * @fonction recupererSuggestions
+ * @brief Trouve jusqu'à 5 médias du même auteur (excluant le média actuel).
+ * @param catalogue Le catalogue complet.
+ * @param mLe média dont on cherche les suggestions.
+ * @param suggestions Tableau de t_media à remplir (taille 5).
+ * @return int Nombre de suggestions trouvées.
+ */
+int recupererSuggestions(t_catalogue catalogue, t_media m, t_media suggestions[5]) {
+    int nbTrouve = 0;
+    int total = getNbMedia(catalogue);
+    char* auteurCible = getAuteur(m);
+    char* codeActuel = getCode(m);
 
+    for (int i = 0; i < total && nbTrouve < 5; i++) {
+        t_media candidat = getMediaCatalogue(catalogue, i);
+        
+        // On vérifie : même auteur ET code différent ET que ce n'est pas un épisode
+        if (strcmp(getAuteur(candidat), auteurCible) == 0 && 
+            strcmp(getCode(candidat), codeActuel) != 0 &&
+            strcmp(getType(candidat), "Episode") != 0) {
+            
+            suggestions[nbTrouve] = candidat;
+            nbTrouve++;
+        }
+    }
+    return nbTrouve;
+}
 
+/**
+ * @fonction recupererEpisodesSerie
+ * @brief Remplit un tableau avec tous les épisodes liés à une série parente.
+ * @param catalogue Le catalogue complet.
+ * @param codeParent Le code de la série (ex: "SER001").
+ * @param episodes Tableau de t_media assez grand pour recevoir les épisodes.
+ * @return int Nombre d'épisodes trouvés.
+ */
+int recupererEpisodesSerie(t_catalogue catalogue, char* codeParent, t_media episodes[100]) {
+    int nbTrouve = 0;
+    int total = getNbMedia(catalogue);
+
+    for (int i = 0; i < total; i++) {
+        t_media candidat = getMediaCatalogue(catalogue, i);
+        char* parentDuCandidat = getParent(candidat);
+
+        // Si le média a un parent et que ce parent correspond au code recherché
+        if (parentDuCandidat != NULL && strcmp(parentDuCandidat, codeParent) == 0) {
+            episodes[nbTrouve] = candidat;
+            nbTrouve++;
+        }
+    }
+    return nbTrouve;
+}

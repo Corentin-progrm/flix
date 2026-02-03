@@ -40,4 +40,10 @@ int texteContient(const char* haystack, const char* needle);
 // Fonction appelée par l'affichage pour filtrer
 int mediaCorrespondRecherche(t_media m, char* texteRecherche);
 
+// Récupère des suggestions basées sur l'auteur du media donné
+int recupererSuggestions(t_catalogue catalogue, t_media m, t_media suggestions[5]);
+
+// Récupère tous les épisodes d'une série donnée par son code parent
+int recupererEpisodesSerie(t_catalogue catalogue, char* codeParent, t_media episodes[100]);
+
 #endif
