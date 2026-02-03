@@ -347,9 +347,16 @@ int dessinerCarteMedia(Rectangle rect, t_media m, Texture2D miniature) {
     Rectangle rectImage = { rect.x, rect.y, rect.width, rect.height - 50 };
     DrawRectangleRec(rectImage, BLACK); // Fond noir pour le mode "Cover"
     redimensionTextureMedia(miniature, rectImage);
-        
+    
     char titreCoupe[30];
-    strncpy(titreCoupe, getTitre(m), 13);
+
+    // On verfie si c'est un episode ou un film pour le titre
+    if (strcmp(getType(m),"Episode") == 0) {
+        strncpy(titreCoupe, getEpisode(m), 13);
+    } else {
+        strncpy(titreCoupe, getTitre(m), 13);
+    }
+    
     titreCoupe[13] = '\0'; 
     if(strlen(getTitre(m)) > 13) strcat(titreCoupe, "...");
 

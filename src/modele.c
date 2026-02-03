@@ -367,6 +367,7 @@ void freeMedia(t_media media) {
     if (media->titre) free(media->titre);
     if (media->auteur) free(media->auteur);
     if (media->parent) free(media->parent);
+    if (media->episode) free(media->episode);
     free(media);
 }
 

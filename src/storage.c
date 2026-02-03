@@ -81,16 +81,16 @@ t_catalogue chargerBaseDeDonnees(void) {
     // Lecture ligne par ligne du fichier
     while (compteur < max_taille && fgets(ligne, sizeof(ligne), fichier)) {
         
-        char tCode[50], tType[50], tTitre[100], tAuteur[100], tParent[100];
+        char tCode[50], tType[50], tTitre[100], tAuteur[100], tParent[100], tEpisode[50];
         int tAnnee; 
         int tDuree;
 
         // Parsing (Découpage de la ligne)
-        int n = sscanf(ligne, "%[^;];%[^;];%[^;];%d;%d;%[^;];%[^\n]", 
-                       tCode, tType, tTitre, &tAnnee, &tDuree, tAuteur, tParent);
+        int n = sscanf(ligne, "%[^;];%[^;];%[^;];%d;%d;%[^;];%[^;];%[^\n]", 
+                       tCode, tType, tTitre, &tAnnee, &tDuree, tAuteur, tParent, tEpisode);
 
         // Si la ligne est bien formée (7 éléments trouvés)
-        if (n == 7) {
+        if (n == 8) {
             // Construction du chemin de la vidéo
             sprintf(cheminVideo, CHEMIN_MEDIAS, tCode);
             
@@ -106,6 +106,7 @@ t_catalogue chargerBaseDeDonnees(void) {
                 setDuree(m, tDuree);
                 setAuteur(m, tAuteur);
                 setParent(m, tParent);
+                setEpisode(m, tEpisode);
                 
                 // On ajoute au catalogue
                 setMediaCatalogue(catalogue, m, compteur);
