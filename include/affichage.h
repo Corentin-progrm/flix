@@ -52,7 +52,7 @@ int dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif, char* recherch
 void dessinerBarreRecherche(char* bufferTexte);
 
 // Affiche la page de détails d'un média.
-int dessinerPageDetails(t_media m, Texture2D affiche, t_catalogue catalogue, Texture2D* toutesTextures);
+int dessinerPageDetails(t_media m, Texture2D affiche, t_catalogue catalogue, Texture2D* toutesTextures, int* indexFilmChoisi);
 
 // --- ANIMATION ---
 void animLogoStart(void);

@@ -98,11 +98,13 @@ int main(void)
             
             if (indexFilmChoisi >= 0) {
 
+                // Dans la boucle main, section ETAT_DETAILS
                 t_media m = getMediaCatalogue(catalogue, indexFilmChoisi);
-                int action = dessinerPageDetails(m, mesTextures[indexFilmChoisi], catalogue, mesTextures);
+                int action = dessinerPageDetails(m, mesTextures[indexFilmChoisi], catalogue, mesTextures, &indexFilmChoisi);
 
                 if (action == 1) etatApp = ETAT_ACCUEIL;
                 if (action == 2) lancerVideo(m);
+
             }
         }
 

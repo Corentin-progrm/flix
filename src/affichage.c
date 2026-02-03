@@ -41,6 +41,7 @@ const Color COLOR_CARD_YEAR         = { 200, 200, 200, 200 };   // Année carte 
 const Color COLOR_CARD_BORDER_OFF   = { 60, 99, 1, 255 };       // Bordure carte média
 const Color COLOR_CARD_BORDER_ON    = { 0, 0, 0, 255 };         // Bordure carte média hover
 // Page Détails
+const Color COLOR_DET_BG            = { 51, 56, 61, 255 };      // Background application
 const Color COLOR_DET_TITLE         = { 245, 245, 245, 255 };   // Titre principal
 const Color COLOR_DET_LABEL         = { 245, 245, 245, 255 };   // Labels des champs
 const Color COLOR_DET_LINE          = { 60, 99, 1, 255 };       // Ligne de séparation
@@ -348,19 +349,31 @@ int dessinerCarteMedia(Rectangle rect, t_media m, Texture2D miniature) {
     DrawRectangleRec(rectImage, BLACK); // Fond noir pour le mode "Cover"
     redimensionTextureMedia(miniature, rectImage);
     
-    char titreCoupe[30];
+    // --- DANS affichage.c (dessinerCarteMedia) ---
 
-    // On verfie si c'est un episode ou un film pour le titre
-    if (strcmp(getType(m),"Episode") == 0) {
-        strncpy(titreCoupe, getEpisode(m), 13);
+    char titreAffichage[30];
+    char* texteSource;
+
+    // 1. On détermine quelle chaîne on veut afficher
+    if (strcmp(getType(m), "Episode") == 0) {
+        texteSource = getEpisode(m); // Utilise "S01E01" par exemple
     } else {
-        strncpy(titreCoupe, getTitre(m), 13);
+        texteSource = getTitre(m);   // Utilise "Inception"
     }
-    
-    titreCoupe[13] = '\0'; 
-    if(strlen(getTitre(m)) > 13) strcat(titreCoupe, "...");
 
-    DrawText(titreCoupe, (int)rect.x + 8, (int)rect.y + (int)rect.height - 40, 20, COLOR_CARD_TITLE);
+    // 2. On vérifie la longueur réelle avant de couper
+    if (texteSource != NULL && strlen(texteSource) > 13) {
+        strncpy(titreAffichage, texteSource, 13);
+        titreAffichage[13] = '\0'; 
+        strcat(titreAffichage, "...");
+    } else if (texteSource != NULL) {
+        strcpy(titreAffichage, texteSource); // Pas besoin de couper
+    } else {
+        strcpy(titreAffichage, "Inconnu");
+    }
+
+    // 3. On affiche le résultat
+    DrawText(titreAffichage, (int)rect.x + 8, (int)rect.y + (int)rect.height - 40, 20, COLOR_CARD_TITLE);
     DrawText(TextFormat("%d", getAnnee(m)), (int)rect.x + 8, (int)rect.y + (int)rect.height - 20, 10, COLOR_CARD_YEAR);
 
     DrawRectangleLinesEx(rect, 3, couleurBordure); // Épaisseur fixe à 3
@@ -451,7 +464,7 @@ int dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif, char* recherch
     return filmClique;
 }
 
-int dessinerPageDetails(t_media m, Texture2D affiche, t_catalogue catalogue, Texture2D* toutesTextures) {
+int dessinerPageDetails(t_media m, Texture2D affiche, t_catalogue catalogue, Texture2D* toutesTextures, int* indexActuel) {
     int action = 0;
 
     // --- 1. CALCULS PRÉALABLES POUR LE SCROLL ---
@@ -461,27 +474,15 @@ int dessinerPageDetails(t_media m, Texture2D affiche, t_catalogue catalogue, Tex
     t_media epis[100];
     int nbEpi = (strcmp(getType(m), "Serie") == 0) ? recupererEpisodesSerie(catalogue, getCode(m), epis) : 0;
 
+    // Calcul de la hauteur pour les limites du scroll
     int hauteurInfos = 450 + 50; 
-    int hauteurDynamique = 0;
-
-    if (nbSugg > 0) {
-        hauteurDynamique = 350; 
-    } else if (nbEpi > 0) {
-        int nbLignes = (nbEpi + 4) / 5;
-        hauteurDynamique = 40 + (nbLignes * 280); 
-    }
-
-    int hauteurTotaleContenu = hauteurInfos + hauteurDynamique;
-    int hauteurVisible = GetScreenHeight() - 140;
-    int limiteBasse = hauteurVisible - hauteurTotaleContenu;
+    int hauteurDynamique = (nbSugg > 0) ? 350 : (nbEpi > 0 ? 40 + ((nbEpi + 4) / 5) * 280 : 0);
+    int limiteBasse = (GetScreenHeight() - 140) - (hauteurInfos + hauteurDynamique);
 
     scrollYDetails += GetMouseWheelMove() * 45;
     if (scrollYDetails > 0) scrollYDetails = 0;
-    if (limiteBasse < 0) {
-        if (scrollYDetails < limiteBasse) scrollYDetails = (float)limiteBasse;
-    } else {
-        scrollYDetails = 0;
-    }
+    if (limiteBasse < 0 && scrollYDetails < limiteBasse) scrollYDetails = (float)limiteBasse;
+    if (limiteBasse >= 0) scrollYDetails = 0;
 
     int offsetScroll = (int)scrollYDetails;
 
@@ -489,12 +490,10 @@ int dessinerPageDetails(t_media m, Texture2D affiche, t_catalogue catalogue, Tex
     BeginScissorMode(0, 140, GetScreenWidth(), GetScreenHeight() - 140);
 
         int startY = 140 + offsetScroll; 
-        int imgW = 300, imgH = 450;
-        Rectangle rectImage = { 50, (float)startY, (float)imgW, (float)imgH };
+        Rectangle rectImage = { 50, (float)startY, 300, 450 };
 
-        // Affiche principale et Infos
-        DrawRectangle(55, startY + 5, imgW, imgH, Fade(BLACK, 0.4f));
-        DrawRectangleRec(rectImage, BLACK);
+        // Affiche et Détails (Ton style actuel)
+        DrawRectangle(55, startY + 5, 300, 450, Fade(BLACK, 0.4f));
         redimensionTextureMedia(affiche, rectImage);
         DrawRectangleLinesEx(rectImage, 2, COLOR_DET_LABEL);
 
@@ -502,72 +501,62 @@ int dessinerPageDetails(t_media m, Texture2D affiche, t_catalogue catalogue, Tex
         DrawText(getTitre(m), textX, textY, 40, COLOR_DET_TITLE);
         DrawLine(textX, textY + 50, GetScreenWidth() - 50, textY + 50, COLOR_DET_LINE);
 
-        textY += 70;
-        DrawText("Annee :", textX, textY, 20, COLOR_DET_LABEL);
-        DrawText(TextFormat("%d", getAnnee(m)), textX + 150, textY, 20, COLOR_DET_VALUE);
-        textY += 35;
-        DrawText("Duree :", textX, textY, 20, COLOR_DET_LABEL);
-        DrawText(TextFormat("%d min", getDuree(m)), textX + 150, textY, 20, COLOR_DET_VALUE);
-        textY += 35;
-        DrawText("Genre :", textX, textY, 20, COLOR_DET_LABEL);
-        DrawText(getType(m), textX + 150, textY, 20, COLOR_DET_VALUE);
-        textY += 35;
-        DrawText("Auteur :", textX, textY, 20, COLOR_DET_LABEL);
-        DrawText(getAuteur(m), textX + 150, textY, 20, COLOR_DET_VALUE);
+        // Affichage des champs
+        int ecart = 35;
+        DrawText(TextFormat("Annee : %d", getAnnee(m)), textX, textY + 70, 20, COLOR_DET_VALUE);
+        DrawText(TextFormat("Duree : %d min", getDuree(m)), textX, textY + 70 + ecart, 20, COLOR_DET_VALUE);
+        DrawText(TextFormat("Auteur : %s", getAuteur(m)), textX, textY + 70 + ecart*2, 20, COLOR_DET_VALUE);
 
+        // Bouton Lecture
         if (strcmp(getType(m), "Serie") != 0) {
-            Rectangle btnPlay = { (float)textX, (float)textY + 60, 200, 60 };
-            Color colBtn = CheckCollisionPointRec(GetMousePosition(), btnPlay) ? COLOR_DET_PLAY_BTN_ON : COLOR_DET_PLAY_BTN_OFF;
-            DrawRectangleRec(btnPlay, colBtn);
+            Rectangle btnPlay = { (float)textX, (float)textY + 180, 200, 60 };
+            if (CheckCollisionPointRec(GetMousePosition(), btnPlay)) {
+                DrawRectangleRec(btnPlay, COLOR_DET_PLAY_BTN_ON);
+                if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) action = 2;
+            } else {
+                DrawRectangleRec(btnPlay, COLOR_DET_PLAY_BTN_OFF);
+            }
             DrawText("LECTURE", (int)btnPlay.x + 35, (int)btnPlay.y + 15, 25, WHITE);
-            if (CheckCollisionPointRec(GetMousePosition(), btnPlay) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) action = 2;
         }
 
-        // --- SECTION SUGGESTIONS / ÉPISODES CORRIGÉE ---
-        int zoneY = startY + imgH + 50;
+        // --- SECTION SUGGESTIONS ---
+        int zoneY = startY + 450 + 50;
         DrawLine(50, zoneY - 20, GetScreenWidth() - 50, zoneY - 20, COLOR_DET_LINE);
 
         if (nbSugg > 0) {
             DrawText("DU MEME AUTEUR :", 50, zoneY, 20, COLOR_DET_LABEL);
             for (int i = 0; i < nbSugg; i++) {
-                float posX = 50 + (i * 180); 
-                float posY = (float)zoneY + 40;
-                
+                float posX = 50 + (i * 180), posY = (float)zoneY + 40;
                 int idxTex = -1;
+                // Trouver l'index de la suggestion dans le catalogue global
                 for(int j=0; j < getNbMedia(catalogue); j++) {
                     if(getMediaCatalogue(catalogue, j) == sugg[i]) { idxTex = j; break; }
                 }
-
                 if (idxTex != -1) {
-                    // Correction : Rectangle, puis t_media, puis Texture
-                    Rectangle r = { posX, posY, 150, 225 };
-                    dessinerCarteMedia(r, sugg[i], toutesTextures[idxTex]);
+                    if (dessinerCarteMedia((Rectangle){ posX, posY, 150, 225 }, sugg[i], toutesTextures[idxTex])) {
+                        *indexActuel = idxTex; // On change le média sélectionné
+                        scrollYDetails = 0;    // Reset le scroll pour le nouveau film
+                    }
                 }
             }
         } else if (nbEpi > 0) {
             DrawText("EPISODES :", 50, zoneY, 20, COLOR_DET_LABEL);
             for (int i = 0; i < nbEpi; i++) {
-                int col = i % 5;
-                int row = i / 5;
-                float posX = 50 + (col * 180);
-                float posY = (float)zoneY + 40 + (row * 280);
-
-                Rectangle r = { posX, posY, 150, 225 };
-                // Pour les épisodes, on utilise l'affiche de la série parente
-                if (dessinerCarteMedia(r, epis[i], affiche)) {
-                    lancerVideo(epis[i]);
+                float posX = 50 + ((i % 5) * 180);
+                float posY = (float)zoneY + 40 + ((i / 5) * 280);
+                if (dessinerCarteMedia((Rectangle){ posX, posY, 150, 225 }, epis[i], affiche)) {
+                    lancerVideo(epis[i]); // Lance l'épisode
                 }
             }
         }
 
     EndScissorMode();
 
-    // --- 3. INTERFACE FIXE ---
-    DrawRectangle(0, 0, GetScreenWidth(), 140, GetColor(0x33383dff)); 
+    // --- 3. INTERFACE FIXE (Header + Retour) ---
+    DrawRectangle(0, 0, GetScreenWidth(), 140, COLOR_DET_BG); 
     dessinerEnTete();
-    Rectangle btnRetour = { 20, 90, 100, 40 };
-    if (dessinerCarreMenu(btnRetour, "< Retour", COLOR_CAT_RETOUR)) {
-        action = 1;
+    if (dessinerCarreMenu((Rectangle){ 20, 90, 100, 40 }, "< Retour", COLOR_CAT_RETOUR)) {
+        action = 1; // Retour à l'accueil
         scrollYDetails = 0; 
     }
 
