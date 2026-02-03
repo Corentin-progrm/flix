@@ -128,14 +128,14 @@ t_catalogue chargerBaseDeDonnees(void) {
 
 int mediaCorrespondCategorie(t_media m, int indexMenu) {
     
+    char* typeMedia = getType(m); 
+
     // Si aucun filtre n'est actif (-1) ou si on clique sur Search(1) ou Ajouter(0),
     // on décide d'afficher TOUT par défaut (ou on gère autrement).
     // Ici, disons que si on n'a pas cliqué sur une catégorie précise, on montre tout.
-    if (indexMenu == -1 || indexMenu == 0 || indexMenu == 1) return 1;
-
-    // Récupération du type de média (Assure-toi d'avoir cette info dans ta struct)
-    // Sinon, remplace getGenre(m) par le champ approprié
-    char* typeMedia = getType(m); 
+    if (indexMenu == -1 || indexMenu == 0 || indexMenu == 1) {
+        if (strcmp(typeMedia, "Episode") != 0) return 1;
+    }
 
     // MAPPING DES BOUTONS (Selon l'ordre dans ta fonction dessinerBarreCategories)
     // 2 = "Film"
