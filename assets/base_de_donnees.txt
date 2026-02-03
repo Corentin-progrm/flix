@@ -1,41 +1,41 @@
-MOV001;Film;InceptionInception;2010;148;C. Nolan;NULL
-MOV002;Film;Le Parrain;1972;175;F. Coppola;NULL
-MOV003;Film;Pulp Fiction;1994;154;Q. Tarantino;NULL
-MOV004;Film;Interstellar;2014;169;C. Nolan;NULL
-MOV005;Film;Parasite;2019;132;B. Joon-ho;NULL
-MOV006;Film;Matrix;1999;136;L. Wachowski;NULL
-MOV007;Film;Forrest Gump;1994;142;R. Zemeckis;NULL
-MOV008;Film;Gladiator;2000;155;R. Scott;NULL
-MOV009;Film;Titanic;1997;195;J. Cameron;NULL
-MOV010;Film;Avatar;2009;162;J. Cameron;NULL
-MOV011;Film;InceptionInception;2010;148;C. Nolan;NULL
-MOV012;Film;Le Parrain;1972;175;F. Coppola;NULL
-MOV013;Film;Pulp Fiction;1994;154;Q. Tarantino;NULL
-MOV014;Film;Interstellar;2014;169;C. Nolan;NULL
-MOV015;Film;Parasite;2019;132;B. Joon-ho;NULL
-MOV016;Film;Matrix;1999;136;L. Wachowski;NULL
-MOV017;Film;Forrest Gump;1994;142;R. Zemeckis;NULL
-MOV018;Film;Gladiator;2000;155;R. Scott;NULL
-MOV019;Film;Titanic;1997;195;J. Cameron;NULL
-MOV020;Film;Avatar;2009;162;J. Cameron;NULL
-SER001;Serie;Brooklyn Nine-Nine;2013;0;Dan Goor;NULL
-EP001;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001
-EP002;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001
-EP003;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001
-EP004;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001
-EP005;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001
-EP006;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001
-EP007;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001
-EP008;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001
-EP009;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001
-EP010;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001
-EP011;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001
-EP012;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001
-EP013;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001
-EP014;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001
-EP015;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001
-EP016;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001
-EP017;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001
-EP018;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001
-EP019;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001
-EP020;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001
+MOV001;Film;InceptionInception;2010;148;C. Nolan;NULL;NULL
+MOV002;Film;Le Parrain;1972;175;F. Coppola;NULL;NULL
+MOV003;Film;Pulp Fiction;1994;154;Q. Tarantino;NULL;NULL
+MOV004;Film;Interstellar;2014;169;C. Nolan;NULL;NULL
+MOV005;Film;Parasite;2019;132;B. Joon-ho;NULL;NULL
+MOV006;Film;Matrix;1999;136;L. Wachowski;NULL;NULL
+MOV007;Film;Forrest Gump;1994;142;R. Zemeckis;NULL;NULL
+MOV008;Film;Gladiator;2000;155;R. Scott;NULL;NULL
+MOV009;Film;Titanic;1997;195;J. Cameron;NULL;NULL
+MOV010;Film;Avatar;2009;162;J. Cameron;NULL;NULL
+MOV011;Film;InceptionInception;2010;148;C. Nolan;NULL;NULL
+MOV012;Film;Le Parrain;1972;175;F. Coppola;NULL;NULL
+MOV013;Film;Pulp Fiction;1994;154;Q. Tarantino;NULL;NULL
+MOV014;Film;Interstellar;2014;169;C. Nolan;NULL;NULL
+MOV015;Film;Parasite;2019;132;B. Joon-ho;NULL;NULL
+MOV016;Film;Matrix;1999;136;L. Wachowski;NULL;NULL
+MOV017;Film;Forrest Gump;1994;142;R. Zemeckis;NULL;NULL
+MOV018;Film;Gladiator;2000;155;R. Scott;NULL;NULL
+MOV019;Film;Titanic;1997;195;J. Cameron;NULL;NULL
+MOV020;Film;Avatar;2009;162;J. Cameron;NULL;NULL
+SER001;Serie;Brooklyn Nine-Nine;2013;0;Dan Goor;NULL;NULL
+EP001;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP001
+EP002;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP002
+EP003;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP003
+EP004;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP004
+EP005;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP005
+EP006;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP006
+EP007;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP007
+EP008;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP008
+EP009;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP009
+EP010;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP010
+EP011;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP011
+EP012;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP012
+EP013;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP013
+EP014;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP014
+EP015;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP015
+EP016;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP016
+EP017;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP017
+EP018;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP018
+EP019;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP019
+EP020;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP020

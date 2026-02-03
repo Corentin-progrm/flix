@@ -26,6 +26,7 @@ struct media{
     int duree; 
     char *auteur;
     char *parent;
+    char *episode;
 };
 
 struct catalogue {
@@ -53,6 +54,7 @@ t_media creer_media(void) {
         media->annee_sortie = 0; 
         media->duree = 0;
         media->parent = NULL;
+        media->episode = NULL;
     }
     
     return media;
@@ -195,6 +197,21 @@ char* getParent(t_media media) {
 }
 
 /**
+ * @fonction getEpisode()
+ * @brief Retourne l'épisode du media.
+ * @param  media    Le media dont on veut obtenir l'épisode.
+ * @return char*    L'épisode du media.
+ */
+char* getEpisode(t_media media) {
+    if (media) {
+        return media->episode;
+    } else {
+        return NULL;
+    }
+}
+
+
+/**
  * @fonction get_media_catalogue()
  * @brief Retourne le media à l'index donné dans le catalogue.
  * @param  catalogue    Le catalogue contenant les medias.
@@ -299,6 +316,19 @@ void setParent(t_media media, char* nouveauParent) {
         free(media->parent);
     }
     media->parent = strdup(nouveauParent);
+}
+
+/**
+ * @fonction setEpisode()
+ * @brief Définit l'épisode du media.
+ * @param  media          Le media dont on veut définir l'épisode.
+ * @param  nouvelEpisode  Le nouvel épisode à définir.
+ */
+void setEpisode(t_media media, char* nouvelEpisode) {
+    if (media->episode != NULL) {
+        free(media->episode);
+    }
+    media->episode = strdup(nouvelEpisode);
 }
 
 /**
