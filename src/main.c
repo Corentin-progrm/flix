@@ -97,8 +97,9 @@ int main(void)
         else if (etatApp == ETAT_DETAILS) {
             
             if (indexFilmChoisi >= 0) {
+
                 t_media m = getMediaCatalogue(catalogue, indexFilmChoisi);
-                int action = dessinerPageDetails(m, mesTextures[indexFilmChoisi]);
+                int action = dessinerPageDetails(m, mesTextures[indexFilmChoisi], catalogue, mesTextures);
 
                 if (action == 1) etatApp = ETAT_ACCUEIL;
                 if (action == 2) lancerVideo(m);

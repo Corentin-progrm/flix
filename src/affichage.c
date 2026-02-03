@@ -62,6 +62,7 @@ const Color COLOR_HORZ_LAST       = { 103, 53, 14, 255 };       // Section Derni
 Texture2D* mesTextures = NULL;          
 static int nbTexturesChargees = 0;
 static float scrollY = 0.0f;    
+static float scrollYDetails = 0;
 
 static int indicesTop5[5] = {-1, -1, -1, -1, -1};
 static int indicesSeries[5] = {-1, -1, -1, -1, -1};
@@ -443,59 +444,105 @@ int dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif, char* recherch
     return filmClique;
 }
 
-int dessinerPageDetails(t_media m, Texture2D affiche) {
-    int action = 0;
-
-    // Bouton Retour avec couleur dédiée
-    Rectangle btnRetour = { 20, 90, 100, 40 };
-    if (dessinerCarreMenu(btnRetour, "< Retour", COLOR_CAT_RETOUR)) action = 1;
-
-    int startY = 140, imgW = 300, imgH = 450;
-    Rectangle rectImage = { 50, (float)startY, (float)imgW, (float)imgH };
-
-    dessinerEnTete();
+/**
+ * @fonction dessinerPageDetails
+ * @brief Affiche la page détaillée d'un média avec suggestions ou épisodes.
+ */
+int dessinerPageDetails(t_media m, Texture2D texPrincipale, t_catalogue catalogue, Texture2D* toutesTextures) {
+    int action = 0; // 0: rien, 1: retour, 2: lecture
     
-    // Ombre de l'affiche
-    DrawRectangle(55, startY + 5, imgW, imgH, Fade(BLACK, 0.4f));
-    DrawRectangleRec(rectImage, BLACK);
-    redimensionTextureMedia(affiche, rectImage);
-    DrawRectangleLinesEx(rectImage, 2, COLOR_DET_LABEL);
-
-    int textX = 380, textY = startY;
-
-    // Titre principal
-    DrawText(getTitre(m), textX, textY, 40, COLOR_DET_TITLE);
-    DrawLine(textX, textY + 50, GetScreenWidth() - 50, textY + 50, COLOR_DET_LINE);
-
-    textY += 70;
-    int ecart = 35;
-
-    // Champs de détails utilisant LABEL et VALUE
-    DrawText("Annee :", textX, textY, 20, COLOR_DET_LABEL);
-    DrawText(TextFormat("%d", getAnnee(m)), textX + 150, textY, 20, COLOR_DET_VALUE);
-    textY += ecart;
-
-    DrawText("Duree :", textX, textY, 20, COLOR_DET_LABEL);
-    DrawText(TextFormat("%d min", getDuree(m)), textX + 150, textY, 20, COLOR_DET_VALUE);
-    textY += ecart;
-
-    DrawText("Genre :", textX, textY, 20, COLOR_DET_LABEL);
-    DrawText(getType(m), textX + 150, textY, 20, COLOR_DET_VALUE);
-    textY += ecart;
-    
-    DrawText("Auteur :", textX, textY, 20, COLOR_DET_LABEL);
-    DrawText(getAuteur(m), textX + 150, textY, 20, COLOR_DET_VALUE);
-
-    // Bouton de Lecture
-    Rectangle btnPlay = { (float)textX, (float)textY + 60, 200, 60 };
-    Color colBtn = COLOR_DET_PLAY_BTN_OFF;
-    if (CheckCollisionPointRec(GetMousePosition(), btnPlay)) {
-        colBtn = COLOR_DET_PLAY_BTN_ON; // Assombrir au survol
-        if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) action = 2;
+    // 1. HEADER / INFOS FIXES
+    // Bouton Retour
+    DrawRectangle(20, 20, 100, 40, DARKGRAY);
+    DrawText("RETOUR", 35, 30, 20, WHITE);
+    if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){20, 20, 100, 40}) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        action = 1;
+        scrollYDetails = 0; // Reset le scroll quand on quitte
     }
+
+    // Affichage principal (Poster et Infos)
+    DrawTextureEx(texPrincipale, (Vector2){50, 80}, 0, 1.0f, WHITE);
     
-    DrawRectangleRec(btnPlay, colBtn);
-    DrawText("LECTURE", (int)btnPlay.x + 35, (int)btnPlay.y + 15, 25, WHITE);
+    int infoX = 400;
+    DrawText(getTitre(m), infoX, 80, 40, WHITE);
+    DrawText(TextFormat("%d | %d min | %s", getAnnee(m), getDuree(m), getAuteur(m)), infoX, 130, 20, LIGHTGRAY);
+    DrawText(getType(m), infoX, 160, 18, GOLD);
+
+    // Bouton Lecture (uniquement si ce n'est pas une Serie "mère")
+    if (strcmp(getType(m), "Serie") != 0) {
+        DrawRectangle(infoX, 220, 200, 50, RED);
+        DrawText("LECTURE", infoX + 55, 235, 20, WHITE);
+        if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){infoX, 220, 200, 50}) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            action = 2;
+        }
+    }
+
+    // 2. ZONE DE CONTENU DYNAMIQUE (Suggestions ou Épisodes)
+    int zoneY = 450;
+    DrawLine(50, zoneY - 20, GetScreenWidth() - 50, zoneY - 20, GRAY);
+
+    // --- CAS : FILM (Suggestions Auteur) ---
+    if (strcmp(getType(m), "Film") == 0) {
+        DrawText("DU MÊME AUTEUR", 50, zoneY, 22, GOLD);
+        
+        t_media suggestions[5];
+        int nbSugg = recupererSuggestions(catalogue, m, suggestions);
+        
+        for (int i = 0; i < nbSugg; i++) {
+            int posX = 50 + (i * 190);
+            int posY = zoneY + 40;
+            
+            // On cherche l'index original pour la texture
+            int idxOrigine = -1;
+            for(int j=0; j < getNbMedia(catalogue); j++) {
+                if(getMediaCatalogue(catalogue, j) == suggestions[i]) {
+                    idxOrigine = j;
+                    break;
+                }
+            }
+
+            if (idxOrigine != -1) {
+                DrawTextureEx(toutesTextures[idxOrigine], (Vector2){(float)posX, (float)posY}, 0, 0.5f, WHITE);
+                DrawText(getTitre(suggestions[i]), posX, posY + 160, 12, LIGHTGRAY);
+            }
+        }
+    } 
+    // --- CAS : SERIE (Liste Épisodes) ---
+    else if (strcmp(getType(m), "Serie") == 0) {
+        DrawText("ÉPISODES", 50, zoneY, 22, GOLD);
+
+        t_media episodes[100];
+        int nbEpi = recupererEpisodesSerie(catalogue, getCode(m), episodes);
+
+        // Gestion du Scroll
+        float wheel = GetMouseWheelMove();
+        scrollYDetails += wheel * 30;
+        if (scrollYDetails > 0) scrollYDetails = 0;
+
+        // On limite l'affichage à la zone basse pour ne pas déborder sur les infos du haut
+        BeginScissorMode(0, zoneY + 30, GetScreenWidth(), GetScreenHeight() - (zoneY + 30));
+        
+        for (int i = 0; i < nbEpi; i++) {
+            int col = i % 5;
+            int row = i / 5;
+            int posX = 50 + (col * 190);
+            int posY = zoneY + 40 + (row * 240) + (int)scrollYDetails;
+
+            // On utilise l'affiche de la série parente pour tous les épisodes
+            DrawTextureEx(texPrincipale, (Vector2){(float)posX, (float)posY}, 0, 0.5f, WHITE);
+            DrawText(getTitre(episodes[i]), posX, posY + 160, 14, WHITE);
+            
+            // Clic sur l'épisode pour le lancer
+            Rectangle rectEpi = {(float)posX, (float)posY, 150, 225};
+            if (CheckCollisionPointRec(GetMousePosition(), rectEpi)) {
+                DrawRectangleLinesEx(rectEpi, 2, RED);
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                    lancerVideo(episodes[i]);
+                }
+            }
+        }
+        EndScissorMode();
+    }
 
     return action;
 }
