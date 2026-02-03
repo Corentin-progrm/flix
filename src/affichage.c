@@ -62,7 +62,7 @@ const Color COLOR_HORZ_LAST       = { 103, 53, 14, 255 };       // Section Derni
 Texture2D* mesTextures = NULL;          
 static int nbTexturesChargees = 0;
 static float scrollY = 0.0f;    
-static float scrollYDetails = 0;
+static float scrollYDetails = 0.0f;
 
 static int indicesTop5[5] = {-1, -1, -1, -1, -1};
 static int indicesSeries[5] = {-1, -1, -1, -1, -1};
@@ -444,104 +444,124 @@ int dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif, char* recherch
     return filmClique;
 }
 
-/**
- * @fonction dessinerPageDetails
- * @brief Affiche la page détaillée d'un média avec suggestions ou épisodes.
- */
-int dessinerPageDetails(t_media m, Texture2D texPrincipale, t_catalogue catalogue, Texture2D* toutesTextures) {
-    int action = 0; // 0: rien, 1: retour, 2: lecture
+int dessinerPageDetails(t_media m, Texture2D affiche, t_catalogue catalogue, Texture2D* toutesTextures) {
+    int action = 0;
+
+    // --- 1. CALCULS PRÉALABLES POUR LE SCROLL ---
+    // On récupère les données pour connaître la hauteur totale
+    t_media sugg[5];
+    int nbSugg = (strcmp(getType(m), "Film") == 0) ? recupererSuggestions(catalogue, m, sugg) : 0;
     
-    // 1. HEADER / INFOS FIXES
-    // Bouton Retour
-    DrawRectangle(20, 20, 100, 40, DARKGRAY);
-    DrawText("RETOUR", 35, 30, 20, WHITE);
-    if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){20, 20, 100, 40}) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    t_media epis[100];
+    int nbEpi = (strcmp(getType(m), "Serie") == 0) ? recupererEpisodesSerie(catalogue, getCode(m), epis) : 0;
+
+    // Calcul de la hauteur totale du contenu
+    int hauteurInfos = 450 + 50; // Affiche (450) + Espace vers le trait (50)
+    int hauteurDynamique = 0;
+
+    if (nbSugg > 0) {
+        hauteurDynamique = 350; // Titre + une ligne d'affiches + marges
+    } else if (nbEpi > 0) {
+        int nbLignes = (nbEpi + 4) / 5;
+        hauteurDynamique = 40 + (nbLignes * 280); // Titre + grille d'épisodes
+    }
+
+    int hauteurTotaleContenu = hauteurInfos + hauteurDynamique;
+    int hauteurVisible = GetScreenHeight() - 140; // Zone sous le header/bouton retour
+    int limiteBasse = hauteurVisible - hauteurTotaleContenu;
+
+    // Gestion du scroll avec limites
+    scrollYDetails += GetMouseWheelMove() * 45;
+    
+    // Limite haute
+    if (scrollYDetails > 0) scrollYDetails = 0;
+    
+    // Limite basse (seulement si le contenu dépasse de l'écran)
+    if (limiteBasse < 0) {
+        if (scrollYDetails < limiteBasse) scrollYDetails = (float)limiteBasse;
+    } else {
+        scrollYDetails = 0; // Pas de scroll si tout tient dans l'écran
+    }
+
+    int offsetScroll = (int)scrollYDetails;
+
+    // --- 2. DESSIN DU CONTENU SCROLLABLE ---
+    BeginScissorMode(0, 140, GetScreenWidth(), GetScreenHeight() - 140);
+
+        int startY = 140 + offsetScroll; 
+        int imgW = 300, imgH = 450;
+        Rectangle rectImage = { 50, (float)startY, (float)imgW, (float)imgH };
+
+        // Affiche et Détails
+        DrawRectangle(55, startY + 5, imgW, imgH, Fade(BLACK, 0.4f));
+        DrawRectangleRec(rectImage, BLACK);
+        redimensionTextureMedia(affiche, rectImage);
+        DrawRectangleLinesEx(rectImage, 2, COLOR_DET_LABEL);
+
+        int textX = 380, textY = startY;
+        DrawText(getTitre(m), textX, textY, 40, COLOR_DET_TITLE);
+        DrawLine(textX, textY + 50, GetScreenWidth() - 50, textY + 50, COLOR_DET_LINE);
+
+        textY += 70;
+        DrawText("Annee :", textX, textY, 20, COLOR_DET_LABEL);
+        DrawText(TextFormat("%d", getAnnee(m)), textX + 150, textY, 20, COLOR_DET_VALUE);
+        textY += 35;
+        DrawText("Duree :", textX, textY, 20, COLOR_DET_LABEL);
+        DrawText(TextFormat("%d min", getDuree(m)), textX + 150, textY, 20, COLOR_DET_VALUE);
+        textY += 35;
+        DrawText("Genre :", textX, textY, 20, COLOR_DET_LABEL);
+        DrawText(getType(m), textX + 150, textY, 20, COLOR_DET_VALUE);
+        textY += 35;
+        DrawText("Auteur :", textX, textY, 20, COLOR_DET_LABEL);
+        DrawText(getAuteur(m), textX + 150, textY, 20, COLOR_DET_VALUE);
+
+        // Bouton Lecture
+        if (strcmp(getType(m), "Serie") != 0) {
+            Rectangle btnPlay = { (float)textX, (float)textY + 60, 200, 60 };
+            Color colBtn = CheckCollisionPointRec(GetMousePosition(), btnPlay) ? COLOR_DET_PLAY_BTN_ON : COLOR_DET_PLAY_BTN_OFF;
+            DrawRectangleRec(btnPlay, colBtn);
+            DrawText("LECTURE", (int)btnPlay.x + 35, (int)btnPlay.y + 15, 25, WHITE);
+            if (CheckCollisionPointRec(GetMousePosition(), btnPlay) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) action = 2;
+        }
+
+        // Suggestions / Épisodes
+        int zoneY = startY + imgH + 50;
+        DrawLine(50, zoneY - 20, GetScreenWidth() - 50, zoneY - 20, COLOR_DET_LINE);
+        float cibleW = 150.0f, cibleH = 225.0f;
+
+        if (nbSugg > 0) {
+            DrawText("DU MEME AUTEUR :", 50, zoneY, 20, COLOR_DET_LABEL);
+            for (int i = 0; i < nbSugg; i++) {
+                int posX = 50 + (i * 180), posY = zoneY + 40;
+                int idx = -1;
+                for(int j=0; j<getNbMedia(catalogue); j++) { if(getMediaCatalogue(catalogue, j) == sugg[i]) { idx = j; break; } }
+                if (idx != -1) {
+                    float scale = cibleW / toutesTextures[idx].width;
+                    DrawTextureEx(toutesTextures[idx], (Vector2){(float)posX, (float)posY}, 0, scale, WHITE);
+                    DrawText(getTitre(sugg[i]), posX, posY + (int)cibleH + 10, 12, COLOR_DET_VALUE);
+                }
+            }
+        } else if (nbEpi > 0) {
+            DrawText("EPISODES :", 50, zoneY, 20, COLOR_DET_LABEL);
+            for (int i = 0; i < nbEpi; i++) {
+                int col = i % 5, row = i / 5;
+                int posX = 50 + (col * 180), posY = zoneY + 40 + (row * 280);
+                float scale = cibleW / affiche.width;
+                DrawTextureEx(affiche, (Vector2){(float)posX, (float)posY}, 0, scale, WHITE);
+                DrawText(getTitre(epis[i]), posX, posY + (int)cibleH + 10, 12, COLOR_DET_VALUE);
+                if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){(float)posX, (float)posY, cibleW, cibleH}) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) lancerVideo(epis[i]);
+            }
+        }
+
+    EndScissorMode();
+
+    // --- 3. INTERFACE FIXE ---
+    DrawRectangle(0, 0, GetScreenWidth(), 140, GetColor(0x33383dff)); 
+    dessinerEnTete();
+    Rectangle btnRetour = { 20, 90, 100, 40 };
+    if (dessinerCarreMenu(btnRetour, "< Retour", COLOR_CAT_RETOUR)) {
         action = 1;
-        scrollYDetails = 0; // Reset le scroll quand on quitte
-    }
-
-    // Affichage principal (Poster et Infos)
-    DrawTextureEx(texPrincipale, (Vector2){50, 80}, 0, 1.0f, WHITE);
-    
-    int infoX = 400;
-    DrawText(getTitre(m), infoX, 80, 40, WHITE);
-    DrawText(TextFormat("%d | %d min | %s", getAnnee(m), getDuree(m), getAuteur(m)), infoX, 130, 20, LIGHTGRAY);
-    DrawText(getType(m), infoX, 160, 18, GOLD);
-
-    // Bouton Lecture (uniquement si ce n'est pas une Serie "mère")
-    if (strcmp(getType(m), "Serie") != 0) {
-        DrawRectangle(infoX, 220, 200, 50, RED);
-        DrawText("LECTURE", infoX + 55, 235, 20, WHITE);
-        if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){infoX, 220, 200, 50}) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            action = 2;
-        }
-    }
-
-    // 2. ZONE DE CONTENU DYNAMIQUE (Suggestions ou Épisodes)
-    int zoneY = 450;
-    DrawLine(50, zoneY - 20, GetScreenWidth() - 50, zoneY - 20, GRAY);
-
-    // --- CAS : FILM (Suggestions Auteur) ---
-    if (strcmp(getType(m), "Film") == 0) {
-        DrawText("DU MÊME AUTEUR", 50, zoneY, 22, GOLD);
-        
-        t_media suggestions[5];
-        int nbSugg = recupererSuggestions(catalogue, m, suggestions);
-        
-        for (int i = 0; i < nbSugg; i++) {
-            int posX = 50 + (i * 190);
-            int posY = zoneY + 40;
-            
-            // On cherche l'index original pour la texture
-            int idxOrigine = -1;
-            for(int j=0; j < getNbMedia(catalogue); j++) {
-                if(getMediaCatalogue(catalogue, j) == suggestions[i]) {
-                    idxOrigine = j;
-                    break;
-                }
-            }
-
-            if (idxOrigine != -1) {
-                DrawTextureEx(toutesTextures[idxOrigine], (Vector2){(float)posX, (float)posY}, 0, 0.5f, WHITE);
-                DrawText(getTitre(suggestions[i]), posX, posY + 160, 12, LIGHTGRAY);
-            }
-        }
-    } 
-    // --- CAS : SERIE (Liste Épisodes) ---
-    else if (strcmp(getType(m), "Serie") == 0) {
-        DrawText("ÉPISODES", 50, zoneY, 22, GOLD);
-
-        t_media episodes[100];
-        int nbEpi = recupererEpisodesSerie(catalogue, getCode(m), episodes);
-
-        // Gestion du Scroll
-        float wheel = GetMouseWheelMove();
-        scrollYDetails += wheel * 30;
-        if (scrollYDetails > 0) scrollYDetails = 0;
-
-        // On limite l'affichage à la zone basse pour ne pas déborder sur les infos du haut
-        BeginScissorMode(0, zoneY + 30, GetScreenWidth(), GetScreenHeight() - (zoneY + 30));
-        
-        for (int i = 0; i < nbEpi; i++) {
-            int col = i % 5;
-            int row = i / 5;
-            int posX = 50 + (col * 190);
-            int posY = zoneY + 40 + (row * 240) + (int)scrollYDetails;
-
-            // On utilise l'affiche de la série parente pour tous les épisodes
-            DrawTextureEx(texPrincipale, (Vector2){(float)posX, (float)posY}, 0, 0.5f, WHITE);
-            DrawText(getTitre(episodes[i]), posX, posY + 160, 14, WHITE);
-            
-            // Clic sur l'épisode pour le lancer
-            Rectangle rectEpi = {(float)posX, (float)posY, 150, 225};
-            if (CheckCollisionPointRec(GetMousePosition(), rectEpi)) {
-                DrawRectangleLinesEx(rectEpi, 2, RED);
-                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-                    lancerVideo(episodes[i]);
-                }
-            }
-        }
-        EndScissorMode();
+        scrollYDetails = 0; 
     }
 
     return action;
