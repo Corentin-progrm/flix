@@ -46,6 +46,8 @@ void lancerVideo(t_media media) {
     if (media == NULL) return;  // Verification media valide
 
     char commande[256];         // Buffer pour la commande système
+
+    enregistrerDansHistorique(getCode(media));  // Enregistre dans l'historique
     
     sprintf(commande, CHEMIN_LANCEMENT_MEDIAS, getCode(media));   //
     
@@ -235,4 +237,39 @@ int recupererEpisodesSerie(t_catalogue catalogue, char* codeParent, t_media epis
         }
     }
     return nbTrouve;
+}
+
+/**
+ * @fonction enregistrerDansHistorique
+ * @brief Ajoute un code de média au début du fichier historique (max 5, sans doublons).
+ */
+void enregistrerDansHistorique(char* code) {
+    if (code == NULL || strcmp(code, "NULL") == 0) return;
+
+    char codes[5][50];
+    int nb = 0;
+
+    // 1. Lire l'existant 
+    FILE* f = fopen("assets/historique.txt", "r");
+    if (f) {
+        char buffer[50];
+        while (fgets(buffer, sizeof(buffer), f) && nb < 5) {
+            buffer[strcspn(buffer, "\n")] = 0; // Nettoyer le \n
+            if (strcmp(buffer, code) != 0 && strlen(buffer) > 0) {
+                strcpy(codes[nb], buffer);
+                nb++;
+            }
+        }
+        fclose(f);
+    }
+
+    // 2. Réécrire le fichier avec le nouveau code en premier
+    f = fopen("assets/historique.txt", "w");
+    if (f) {
+        fprintf(f, "%s\n", code); // Le plus récent
+        for (int i = 0; i < nb && i < 4; i++) { // On garde les 4 anciens suivants
+            fprintf(f, "%s\n", codes[i]);
+        }
+        fclose(f);
+    }
 }

@@ -46,4 +46,7 @@ int recupererSuggestions(t_catalogue catalogue, t_media m, t_media suggestions[5
 // Récupère tous les épisodes d'une série donnée par son code parent
 int recupererEpisodesSerie(t_catalogue catalogue, char* codeParent, t_media episodes[100]);
 
+// Enregistre un code média dans l'historique des visionnages
+void enregistrerDansHistorique(char* code);
+
 #endif
