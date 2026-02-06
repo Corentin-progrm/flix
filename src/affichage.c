@@ -121,66 +121,83 @@ static int dessinerCarreMenu(Rectangle rect, char* texte, Color couleurPrincipal
     return estClique;
 }
 
+
 /**
  * @fonction initSections
- * @brief Initialise les sélections aléatoires uniques filtrées par type.
+ * @brief Initialise les sélections (aléatoires pour Films/Séries, historique pour le reste).
+ * @param catalogue Le catalogue complet pour rechercher les médias par type ou code.
  */
 static void initSections(t_catalogue catalogue) {
-    if (estSectionsInit) return;
+    if (estSectionsInit) return; //
     
-    int nbTotal = getNbMedia(catalogue);
+    int nbTotal = getNbMedia(catalogue); //
     
-    // Tableaux temporaires pour stocker TOUS les indices par type
+    // Tableaux temporaires pour le tirage aléatoire
     int idxFilms[100], nbF = 0;
     int idxSeries[100], nbS = 0;
-    int idxEpis[100], nbE = 0;
 
-    // 1. On trie tous les médias du catalogue par catégorie
-    for (int i = 0; i < nbTotal; i++) {
-        t_media m = getMediaCatalogue(catalogue, i);
-        char* type = getType(m);
-
-        if (strcmp(type, "Film") == 0 && nbF < 100) idxFilms[nbF++] = i;
-        else if (strcmp(type, "Serie") == 0 && nbS < 100) idxSeries[nbS++] = i;
-        else if (strcmp(type, "Episode") == 0 && nbE < 100) idxEpis[nbE++] = i;
-    }
-
-    // 2. Mélange (Shuffle) et remplissage unique
-    // On réinitialise les tops à -1 (vide)
+    // 1. Initialisation des tableaux d'indices à -1 (vide)
     for(int i = 0; i < 5; i++) {
-        indicesTop5[i] = -1;
-        indicesSeries[i] = -1;
-        indicesLast[i] = -1;
+        indicesTop5[i] = -1;  //
+        indicesSeries[i] = -1; //
+        indicesLast[i] = -1;   //
     }
 
-    // Tirage aléatoire sans répétition pour les FILMS
+    // 2. Tri du catalogue pour préparer le tirage aléatoire des Films et Séries
+    for (int i = 0; i < nbTotal; i++) {
+        t_media m = getMediaCatalogue(catalogue, i); //
+        char* type = getType(m); //
+
+        if (strcmp(type, "Film") == 0 && nbF < 100) {
+            idxFilms[nbF++] = i;
+        }
+        else if (strcmp(type, "Serie") == 0 && nbS < 100) {
+            idxSeries[nbS++] = i;
+        }
+    }
+
+    // 3. Tirage aléatoire UNIQUE pour les FILMS (Fisher-Yates)
     for (int i = 0; i < 5 && i < nbF; i++) {
-        int r = GetRandomValue(i, nbF - 1); // On pioche un index au hasard
-        int temp = idxFilms[i];             // On échange (swap) pour ne pas le reprendre
+        int r = GetRandomValue(i, nbF - 1); //
+        int temp = idxFilms[i];
         idxFilms[i] = idxFilms[r];
         idxFilms[r] = temp;
-        indicesTop5[i] = idxFilms[i];       // L'élément à l'index i est désormais unique
+        indicesTop5[i] = idxFilms[i]; 
     }
 
-    // Tirage aléatoire sans répétition pour les SERIES
+    // 4. Tirage aléatoire UNIQUE pour les SERIES
     for (int i = 0; i < 5 && i < nbS; i++) {
-        int r = GetRandomValue(i, nbS - 1);
+        int r = GetRandomValue(i, nbS - 1); //
         int temp = idxSeries[i];
         idxSeries[i] = idxSeries[r];
         idxSeries[r] = temp;
         indicesSeries[i] = idxSeries[i];
     }
 
-    // Tirage aléatoire sans répétition pour les EPISODES
-    for (int i = 0; i < 5 && i < nbE; i++) {
-        int r = GetRandomValue(i, nbE - 1);
-        int temp = idxEpis[i];
-        idxEpis[i] = idxEpis[r];
-        idxEpis[r] = temp;
-        indicesLast[i] = idxEpis[i];
+    // 5. CHARGEMENT DE L'HISTORIQUE PERSISTANT (Derniers vus)
+    FILE* f = fopen("assets/historique.txt", "r");
+    if (f) {
+        char codeLu[50];
+        int count = 0;
+        // On lit les codes ligne par ligne dans le fichier
+        while (fgets(codeLu, sizeof(codeLu), f) && count < 5) {
+            // Nettoyage du caractère de saut de ligne \n
+            codeLu[strcspn(codeLu, "\n")] = 0;
+            
+            // Recherche de l'index correspondant au code dans le catalogue
+            for (int j = 0; j < nbTotal; j++) {
+                t_media m = getMediaCatalogue(catalogue, j);
+                if (strcmp(getCode(m), codeLu) == 0) {
+                    indicesLast[count] = j;
+                    count++;
+                    break; 
+                }
+            }
+        }
+        fclose(f);
     }
     
-    estSectionsInit = 1;
+    estSectionsInit = 1; //
 }
 
 // Dessine une section horizontale de films
@@ -297,8 +314,16 @@ void chargerTexturesCatalogue(t_catalogue catalogue) {
         t_media m = getMediaCatalogue(catalogue, i);
         char cheminImage[150];
         
-        sprintf(cheminImage, CHEMIN_IMAGES, getCode(m));
+        char* codeImage = getCode(m);
 
+        if (strcmp(getType(m), "Episode") == 0) {
+            codeImage = getParent(m); 
+        }
+
+        // 2. Construire le chemin final
+        sprintf(cheminImage, CHEMIN_IMAGES, codeImage);
+
+        // 3. Vérifier et charger
         if (FileExists(cheminImage)) {
             mesTextures[i] = LoadTexture(cheminImage);
             SetTextureFilter(mesTextures[i], TEXTURE_FILTER_BILINEAR);
@@ -471,6 +496,11 @@ int dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif, char* recherch
     int currentY = startY + 20 - (int)scrollY;
 
     if (afficherSections) {
+        Rectangle z3 = { (float)startX, (float)currentY, (float)largeurFenetre, (float)CARTE_HAUTEUR + 50 };
+        int c3 = dessinerSectionHorizontale(catalogue, z3, startY, startX, "Derniers vus", COLOR_HORZ_LAST, indicesLast, 0);
+        if (c3 != -1) filmClique = c3;
+        currentY += hSection;
+
         Rectangle z1 = { (float)startX, (float)currentY, (float)largeurFenetre, (float)CARTE_HAUTEUR + 50 };
         int c1 = dessinerSectionHorizontale(catalogue, z1, startY, startX, "Top 5 Films", COLOR_HORZ_FILM, indicesTop5, 0);
         if (c1 != -1) filmClique = c1;
@@ -479,11 +509,6 @@ int dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif, char* recherch
         Rectangle z2 = { (float)startX, (float)currentY, (float)largeurFenetre, (float)CARTE_HAUTEUR + 50 };
         int c2 = dessinerSectionHorizontale(catalogue, z2, startY, startX, "Top 5 Series", COLOR_HORZ_SERIE, indicesSeries, 0);
         if (c2 != -1) filmClique = c2;
-        currentY += hSection;
-
-        Rectangle z3 = { (float)startX, (float)currentY, (float)largeurFenetre, (float)CARTE_HAUTEUR + 50 };
-        int c3 = dessinerSectionHorizontale(catalogue, z3, startY, startX, "Derniers vus", COLOR_HORZ_LAST, indicesLast, 0);
-        if (c3 != -1) filmClique = c3;
         currentY += hSection;
     }
 
