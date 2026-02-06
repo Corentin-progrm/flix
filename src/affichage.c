@@ -121,32 +121,64 @@ static int dessinerCarreMenu(Rectangle rect, char* texte, Color couleurPrincipal
     return estClique;
 }
 
-// Remplit un tableau avec 5 indices aléatoires
-static void remplirSelectionAleatoire(int* tableau, int nbTotal) {
-    int count = 0;
-    int maxFilms = (nbTotal < 5) ? nbTotal : 5;
+/**
+ * @fonction initSections
+ * @brief Initialise les sélections aléatoires uniques filtrées par type.
+ */
+static void initSections(t_catalogue catalogue) {
+    if (estSectionsInit) return;
     
-    for(int i=0; i<5; i++) tableau[i] = -1;
+    int nbTotal = getNbMedia(catalogue);
+    
+    // Tableaux temporaires pour stocker TOUS les indices par type
+    int idxFilms[100], nbF = 0;
+    int idxSeries[100], nbS = 0;
+    int idxEpis[100], nbE = 0;
 
-    while (count < maxFilms) {
-        int r = GetRandomValue(0, nbTotal - 1);
-        int dejaPris = 0;
-        for (int i = 0; i < count; i++) {
-            if (tableau[i] == r) dejaPris = 1;
-        }
-        if (!dejaPris) {
-            tableau[count] = r;
-            count++;
-        }
+    // 1. On trie tous les médias du catalogue par catégorie
+    for (int i = 0; i < nbTotal; i++) {
+        t_media m = getMediaCatalogue(catalogue, i);
+        char* type = getType(m);
+
+        if (strcmp(type, "Film") == 0 && nbF < 100) idxFilms[nbF++] = i;
+        else if (strcmp(type, "Serie") == 0 && nbS < 100) idxSeries[nbS++] = i;
+        else if (strcmp(type, "Episode") == 0 && nbE < 100) idxEpis[nbE++] = i;
     }
-}
 
-static void initSections(int nbTotalFilms) {
-    if (estSectionsInit || nbTotalFilms == 0) return;
-    
-    remplirSelectionAleatoire(indicesTop5, nbTotalFilms);
-    remplirSelectionAleatoire(indicesSeries, nbTotalFilms);
-    remplirSelectionAleatoire(indicesLast, nbTotalFilms);
+    // 2. Mélange (Shuffle) et remplissage unique
+    // On réinitialise les tops à -1 (vide)
+    for(int i = 0; i < 5; i++) {
+        indicesTop5[i] = -1;
+        indicesSeries[i] = -1;
+        indicesLast[i] = -1;
+    }
+
+    // Tirage aléatoire sans répétition pour les FILMS
+    for (int i = 0; i < 5 && i < nbF; i++) {
+        int r = GetRandomValue(i, nbF - 1); // On pioche un index au hasard
+        int temp = idxFilms[i];             // On échange (swap) pour ne pas le reprendre
+        idxFilms[i] = idxFilms[r];
+        idxFilms[r] = temp;
+        indicesTop5[i] = idxFilms[i];       // L'élément à l'index i est désormais unique
+    }
+
+    // Tirage aléatoire sans répétition pour les SERIES
+    for (int i = 0; i < 5 && i < nbS; i++) {
+        int r = GetRandomValue(i, nbS - 1);
+        int temp = idxSeries[i];
+        idxSeries[i] = idxSeries[r];
+        idxSeries[r] = temp;
+        indicesSeries[i] = idxSeries[i];
+    }
+
+    // Tirage aléatoire sans répétition pour les EPISODES
+    for (int i = 0; i < 5 && i < nbE; i++) {
+        int r = GetRandomValue(i, nbE - 1);
+        int temp = idxEpis[i];
+        idxEpis[i] = idxEpis[r];
+        idxEpis[r] = temp;
+        indicesLast[i] = idxEpis[i];
+    }
     
     estSectionsInit = 1;
 }
@@ -400,7 +432,7 @@ void dessinerBarreRecherche(char* bufferTexte) {
 int dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif, char* recherche) {
     int filmClique = -1;
     int nbFilms = getNbMedia(catalogue);
-    initSections(nbFilms); 
+    initSections(catalogue); 
 
     int startY = 200;
     int largeurFenetre = GetScreenWidth();
