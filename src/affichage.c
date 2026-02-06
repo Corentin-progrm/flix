@@ -24,12 +24,12 @@ const Color COLOR_ACCENT            = { 230, 41, 55, 255 };     // RED Raylib
 const Color COLOR_HEADER_LINE       = { 0, 0, 0, 255 };         // BLACK Logo cadre
 const Color COLOR_SEARCH_BG         = { 53, 83, 14, 255 };      // Fond rectangle Recherche
 const Color COLOR_SEARCH_BORDER     = { 60, 99, 1, 255 };       // Bordure rectangle Recherche
-const Color COLOR_SEARCH_TEXT       = { 0, 0, 0, 255 };         // Texte Recherche...
+const Color COLOR_SEARCH_TEXT       = { 252, 245, 238, 255 };         // Texte Recherche...
 
 // Boutons Catégories (Mode Tuile)
-const Color COLOR_BTN_TXT           = { 245, 245, 245, 255 };   // Texte boutons
-const Color COLOR_CAT_AJOUTER       = { 103, 14, 20, 255 };     // Cadre Menu Ajouter
-const Color COLOR_CAT_FILM          = { 103, 14, 64, 255 };     // Cadre Menu Film
+const Color COLOR_BTN_TXT           = { 252, 245, 238, 255 };   // Texte boutons
+const Color COLOR_CAT_AJOUTER       = { 255, 196, 196, 255 };     // Cadre Menu Ajouter
+const Color COLOR_CAT_FILM          = { 238, 105, 131, 255 };     // Cadre Menu Film
 const Color COLOR_CAT_SERIE         = { 14, 103, 97, 255 };     // Cadre Menu Serie
 const Color COLOR_CAT_AUTRE         = { 103, 53, 14, 255 };     // Cadre Menu Autre
 const Color COLOR_CAT_FAVORI        = { 14, 20, 103, 255 };     // Cadre Menu Favoris
@@ -53,6 +53,7 @@ const Color COLOR_CAT_RETOUR        = { 60, 99, 1, 255 };       // Cadre Bouton 
 const Color COLOR_HORZ_FILM       = { 103, 14, 64, 255 };       // Section Top 5 Films
 const Color COLOR_HORZ_SERIE      = { 14, 103, 97, 255 };       // Section Top 5 Series
 const Color COLOR_HORZ_LAST       = { 103, 53, 14, 255 };       // Section Derniers Vus
+
 
 #define CHEMIN_IMAGES "assets/images/%s.jpg"
 
@@ -496,18 +497,21 @@ int dessinerGrilleFiltree(t_catalogue catalogue, int filtreActif, char* recherch
     int currentY = startY + 20 - (int)scrollY;
 
     if (afficherSections) {
-        Rectangle z3 = { (float)startX, (float)currentY, (float)largeurFenetre, (float)CARTE_HAUTEUR + 50 };
-        int c3 = dessinerSectionHorizontale(catalogue, z3, startY, startX, "Derniers vus", COLOR_HORZ_LAST, indicesLast, 0);
+        int largeurTop5 = (5 * CARTE_LARGEUR) + (4 * 20); 
+        int startXSections = (largeurFenetre - largeurTop5) / 2;
+
+        Rectangle z3 = { (float)startXSections, (float)currentY, (float)largeurFenetre, (float)CARTE_HAUTEUR + 50 };
+        int c3 = dessinerSectionHorizontale(catalogue, z3, startY, startXSections, "Derniers vus", COLOR_HORZ_LAST, indicesLast, 0);
         if (c3 != -1) filmClique = c3;
         currentY += hSection;
 
-        Rectangle z1 = { (float)startX, (float)currentY, (float)largeurFenetre, (float)CARTE_HAUTEUR + 50 };
-        int c1 = dessinerSectionHorizontale(catalogue, z1, startY, startX, "Top 5 Films", COLOR_HORZ_FILM, indicesTop5, 0);
+        Rectangle z1 = { (float)startXSections, (float)currentY, (float)largeurFenetre, (float)CARTE_HAUTEUR + 50 };
+        int c1 = dessinerSectionHorizontale(catalogue, z1, startY, startXSections, "Top 5 Films", COLOR_HORZ_FILM, indicesTop5, 0);
         if (c1 != -1) filmClique = c1;
         currentY += hSection;
 
-        Rectangle z2 = { (float)startX, (float)currentY, (float)largeurFenetre, (float)CARTE_HAUTEUR + 50 };
-        int c2 = dessinerSectionHorizontale(catalogue, z2, startY, startX, "Top 5 Series", COLOR_HORZ_SERIE, indicesSeries, 0);
+        Rectangle z2 = { (float)startXSections, (float)currentY, (float)largeurFenetre, (float)CARTE_HAUTEUR + 50 };
+        int c2 = dessinerSectionHorizontale(catalogue, z2, startY, startXSections, "Top 5 Series", COLOR_HORZ_SERIE, indicesSeries, 0);
         if (c2 != -1) filmClique = c2;
         currentY += hSection;
     }
