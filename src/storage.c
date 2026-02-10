@@ -86,17 +86,18 @@ t_catalogue chargerBaseDeDonnees(void) {
         char tCode[50], tType[50], tTitre[100], tAuteur[100], tParent[100], tEpisode[50];
         int tAnnee; 
         int tDuree;
+        int tSaison;
 
         // Parsing (Découpage de la ligne)
-        int n = sscanf(ligne, "%[^;];%[^;];%[^;];%d;%d;%[^;];%[^;];%[^\n]", 
-                       tCode, tType, tTitre, &tAnnee, &tDuree, tAuteur, tParent, tEpisode);
+        int n = sscanf(ligne, "%[^;];%[^;];%[^;];%d;%d;%[^;];%[^;];%[^;];%d", 
+                       tCode, tType, tTitre, &tAnnee, &tDuree, tAuteur, tParent, tEpisode, &tSaison);
 
-        // Si la ligne est bien formée (7 éléments trouvés)
-        if (n == 8) {
+        // Si la ligne est bien formée (9 éléments trouvés)
+        if (n == 9) {
             // Construction du chemin de la vidéo
             sprintf(cheminVideo, CHEMIN_MEDIAS, tCode);
             
-            // On vérifie si la vidéo existe réellement
+            // On vérifie si la vidéo existe réellement sauf si c'est l'entete d'une serie
             if (fichierExiste(cheminVideo) || strcmp(tType, "Serie") == 0) {
                 
                 // Création et remplissage du media
@@ -109,6 +110,7 @@ t_catalogue chargerBaseDeDonnees(void) {
                 setAuteur(m, tAuteur);
                 setParent(m, tParent);
                 setEpisode(m, tEpisode);
+                setSaison(m, tSaison);
                 
                 // On ajoute au catalogue
                 setMediaCatalogue(catalogue, m, compteur);

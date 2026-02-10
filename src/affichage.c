@@ -432,6 +432,7 @@ int dessinerCarteMedia(Rectangle rect, t_media m, Texture2D miniature) {
     // --- DANS affichage.c (dessinerCarteMedia) ---
 
     char titreAffichage[30];
+    char sousTitreAffichage[30];
     char* texteSource;
 
     // 1. On détermine quelle chaîne on veut afficher

@@ -27,6 +27,7 @@ struct media{
     char *auteur;
     char *parent;
     char *episode;
+    int saison;
 };
 
 struct catalogue {
@@ -55,6 +56,7 @@ t_media creer_media(void) {
         media->duree = 0;
         media->parent = NULL;
         media->episode = NULL;
+        media->saison = 0;
     }
     
     return media;
@@ -210,6 +212,19 @@ char* getEpisode(t_media media) {
     }
 }
 
+/**
+ * @fonction getSaison()
+ * @brief Retourne la saison du media.
+ * @param  media    Le media dont on veut obtenir la saison.
+ * @return int      La saison du media.
+ */
+int getSaison(t_media media) {
+    if (media) {
+        return media->saison;
+    } else {
+        return 0;
+    }
+}
 
 /**
  * @fonction get_media_catalogue()
@@ -329,6 +344,16 @@ void setEpisode(t_media media, char* nouvelEpisode) {
         free(media->episode);
     }
     media->episode = strdup(nouvelEpisode);
+}
+
+/**
+ * @fonction setSaison()
+ * @brief Définit la saison du media.
+ * @param  media          Le media dont on veut définir la saison.
+ * @param  nouvelleSaison La nouvelle saison à définir.
+ */
+void setSaison(t_media media, int nouvelleSaison) {
+    media->saison = nouvelleSaison;
 }
 
 /**
