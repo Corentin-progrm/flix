@@ -64,7 +64,7 @@ void lancerVideo(t_media media) {
 t_catalogue chargerBaseDeDonnees(void) {
 
     t_catalogue catalogue = creer_catalogue();      // Creation du catalogue vide
-    int max_taille = 100;                           // Taille maximale du catalogue (arbitraire)
+    int max_taille = 1000;                           // Taille maximale du catalogue (arbitraire)
 
     allouerTableauMedia(catalogue, max_taille);     // Allocation du tableau de medias
 

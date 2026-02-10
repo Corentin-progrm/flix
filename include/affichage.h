@@ -54,6 +54,9 @@ void dessinerBarreRecherche(char* bufferTexte);
 // Affiche la page de détails d'un média.
 int dessinerPageDetails(t_media m, Texture2D affiche, t_catalogue catalogue, Texture2D* toutesTextures, int* indexFilmChoisi);
 
+// Permet de dessiner du texte avec la police personnalisée et une couleur spécifique
+void DessinerTextePerso(const char* texte, int x, int y, int taille, Color couleur);
+
 // --- ANIMATION ---
 void animLogoStart(void);
 

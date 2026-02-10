@@ -22,37 +22,41 @@ const Color COLOR_ACCENT            = { 230, 41, 55, 255 };     // RED Raylib
 
 // En-tête et Recherche
 const Color COLOR_HEADER_LINE       = { 0, 0, 0, 255 };         // BLACK Logo cadre
-const Color COLOR_SEARCH_BG         = { 53, 83, 14, 255 };      // Fond rectangle Recherche
-const Color COLOR_SEARCH_BORDER     = { 60, 99, 1, 255 };       // Bordure rectangle Recherche
+const Color COLOR_SEARCH_BG         = { 116, 128, 139, 255 };      // Fond rectangle Recherche
+const Color COLOR_SEARCH_BORDER     = { 74, 82, 89, 255 };       // Bordure rectangle Recherche
 const Color COLOR_SEARCH_TEXT       = { 252, 245, 238, 255 };         // Texte Recherche...
 
 // Boutons Catégories (Mode Tuile)
 const Color COLOR_BTN_TXT           = { 252, 245, 238, 255 };   // Texte boutons
-const Color COLOR_CAT_AJOUTER       = { 255, 196, 196, 255 };     // Cadre Menu Ajouter
-const Color COLOR_CAT_FILM          = { 238, 105, 131, 255 };     // Cadre Menu Film
-const Color COLOR_CAT_SERIE         = { 14, 103, 97, 255 };     // Cadre Menu Serie
-const Color COLOR_CAT_AUTRE         = { 103, 53, 14, 255 };     // Cadre Menu Autre
-const Color COLOR_CAT_FAVORI        = { 14, 20, 103, 255 };     // Cadre Menu Favoris
+const Color COLOR_CAT_AJOUTER       = { 255, 230, 230, 255 };     // Cadre Menu Ajouter
+const Color COLOR_CAT_FILM          = { 255, 196, 196, 255 };     // Cadre Menu Film
+const Color COLOR_CAT_SERIE         = { 238, 105, 131, 255 };     // Cadre Menu Serie
+const Color COLOR_CAT_AUTRE         = { 188, 21, 54, 255 };     // Cadre Menu Autre
+const Color COLOR_CAT_FAVORI        = { 133, 14, 53, 255 };     // Cadre Menu Favoris
 
 // Cartes Média
-const Color COLOR_CARD_BG           = { 53, 83, 14, 255 };      // Fond carte média
-const Color COLOR_CARD_TITLE        = { 245, 245, 245, 255 };   // Titre carte média
+const Color COLOR_CARD_BG           = { 116, 128, 139, 255 };      // Fond carte média
+const Color COLOR_CARD_TITLE        = { 252, 245, 238, 255 };   // Titre carte média
 const Color COLOR_CARD_YEAR         = { 200, 200, 200, 200 };   // Année carte média
-const Color COLOR_CARD_BORDER_OFF   = { 60, 99, 1, 255 };       // Bordure carte média
+const Color COLOR_CARD_BORDER_OFF   = { 74, 82, 89, 255 };       // Bordure carte média
 const Color COLOR_CARD_BORDER_ON    = { 0, 0, 0, 255 };         // Bordure carte média hover
+
 // Page Détails
 const Color COLOR_DET_BG            = { 51, 56, 61, 255 };      // Background application
-const Color COLOR_DET_TITLE         = { 245, 245, 245, 255 };   // Titre principal
-const Color COLOR_DET_LABEL         = { 245, 245, 245, 255 };   // Labels des champs
-const Color COLOR_DET_LINE          = { 60, 99, 1, 255 };       // Ligne de séparation
-const Color COLOR_DET_VALUE         = { 245, 245, 245, 255 };   // Valeurs des champs
-const Color COLOR_DET_PLAY_BTN_OFF  = { 60, 99, 1, 255 };       // Cadre Bouton Play
+const Color COLOR_DET_TITLE         = { 252, 245, 238, 255 };   // Titre principal
+const Color COLOR_DET_LABEL         = { 252, 245, 238, 255 };   // Labels des champs
+const Color COLOR_DET_LINE          = { 74, 82, 89, 255 };       // Ligne de séparation
+const Color COLOR_DET_VALUE         = { 252, 245, 238, 255 };   // Valeurs des champs
+const Color COLOR_DET_PLAY_BTN_OFF  = { 74, 82, 89, 255 };       // Cadre Bouton Play
 const Color COLOR_DET_PLAY_BTN_ON   = { 0, 0, 0, 255 };         // Cadre Bouton Play hover
-const Color COLOR_CAT_RETOUR        = { 60, 99, 1, 255 };       // Cadre Bouton Retour
+const Color COLOR_CAT_RETOUR        = { 74, 82, 89, 255 };       // Cadre Bouton Retour
+
 // Sections Horizontales
-const Color COLOR_HORZ_FILM       = { 103, 14, 64, 255 };       // Section Top 5 Films
-const Color COLOR_HORZ_SERIE      = { 14, 103, 97, 255 };       // Section Top 5 Series
-const Color COLOR_HORZ_LAST       = { 103, 53, 14, 255 };       // Section Derniers Vus
+const Color COLOR_HORZ_FILM       = { 188, 204, 220, 255 };       // Section Top 5 Films
+const Color COLOR_HORZ_SERIE      = { 217, 234, 253, 255 };       // Section Top 5 Series
+const Color COLOR_HORZ_LAST       = { 248, 250, 252, 255 };       // Section Derniers Vus
+
+
 
 
 #define CHEMIN_IMAGES "assets/images/%s.jpg"
@@ -70,6 +74,8 @@ static int indicesTop5[5] = {-1, -1, -1, -1, -1};
 static int indicesSeries[5] = {-1, -1, -1, -1, -1};
 static int indicesLast[5] = {-1, -1, -1, -1, -1};
 static int estSectionsInit = 0;
+
+static Font policeApp;
 
 /* ============================================================================
    FONCTIONS UTILITAIRES PRIVÉES
@@ -117,7 +123,7 @@ static int dessinerCarreMenu(Rectangle rect, char* texte, Color couleurPrincipal
     int posX = (int)(rect.x + rect.width - largeurTexte - 10);
     int posY = (int)(rect.y + rect.height - taillePolice - 10);
 
-    DrawText(texte, posX, posY, taillePolice, COLOR_BTN_TXT);
+    DessinerTextePerso(texte, posX, posY, taillePolice, COLOR_BTN_TXT);
 
     return estClique;
 }
@@ -221,7 +227,7 @@ static int dessinerSectionHorizontale(t_catalogue catalogue, Rectangle zoneViewp
                      (int)zoneViewport.width, (int)zoneViewport.height + 50);
 
     DrawRectangleLinesEx(rectBandeMobile, 4, couleur);
-    DrawText(titre, (int)rectBandeMobile.x + 10, (int)rectBandeMobile.y - 30, 24, couleur);
+    DessinerTextePerso(titre, (int)rectBandeMobile.x + 10, (int)rectBandeMobile.y - 30, 24, couleur);
 
     for (int i = 0; i < nbTop; i++) {
         int idx = indices[i];
@@ -292,6 +298,9 @@ void initInterface(int largeur, int hauteur, char* titre) {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(largeur, hauteur, titre);
     
+    policeApp = LoadFontEx("assets/VarelaRound-Regular.ttf", 128, NULL, 0);
+    SetTextureFilter(policeApp.texture, TEXTURE_FILTER_POINT);
+
     if (FileExists("assets/logo.png")) {
         Image icone = LoadImage("assets/logo.png");
         SetWindowIcon(icone); 
@@ -302,7 +311,13 @@ void initInterface(int largeur, int hauteur, char* titre) {
 }
 
 void fermerInterface(void) {
+    UnloadFont(policeApp);
     CloseWindow();
+}
+
+void DessinerTextePerso(const char* texte, int x, int y, int taille, Color couleur) {
+    Vector2 pos = { (float)x, (float)y };
+    DrawTextEx(policeApp, texte, pos, (float)taille+3, 1, couleur);
 }
 
 void chargerTexturesCatalogue(t_catalogue catalogue) {
@@ -354,8 +369,8 @@ void libererTexturesCatalogue(void) {
 void dessinerEnTete(void) {
     Rectangle rectLogo = { 25, 25, 50, 50 };
     DrawRectangleLinesEx(rectLogo, 3, COLOR_HEADER_LINE);
-    DrawText("nF", 45, 50, 20, COLOR_ACCENT);
-    DrawText("NounaFlix", 100, 40, 40, COLOR_ACCENT);
+    DessinerTextePerso("nF", 45, 50, 20, COLOR_ACCENT);
+    DessinerTextePerso("NounaFlix", 100, 40, 40, COLOR_ACCENT);
 }
 
 int dessinerBarreCategories(void) {
@@ -431,8 +446,8 @@ int dessinerCarteMedia(Rectangle rect, t_media m, Texture2D miniature) {
     }
 
     // 3. On affiche le résultat
-    DrawText(titreAffichage, (int)rect.x + 8, (int)rect.y + (int)rect.height - 40, 20, COLOR_CARD_TITLE);
-    DrawText(TextFormat("%d", getAnnee(m)), (int)rect.x + 8, (int)rect.y + (int)rect.height - 20, 10, COLOR_CARD_YEAR);
+    DessinerTextePerso(titreAffichage, (int)rect.x + 8, (int)rect.y + (int)rect.height - 40, 20, COLOR_CARD_TITLE);
+    DessinerTextePerso(TextFormat("%d", getAnnee(m)), (int)rect.x + 8, (int)rect.y + (int)rect.height - 20, 10, COLOR_CARD_YEAR);
 
     DrawRectangleLinesEx(rect, 3, couleurBordure); // Épaisseur fixe à 3
 
@@ -449,9 +464,9 @@ void dessinerBarreRecherche(char* bufferTexte) {
     DrawRectangleLinesEx(rect, 2, COLOR_SEARCH_BORDER);
 
     if (strlen(bufferTexte) > 0) {
-        DrawText(bufferTexte, x + 10, y + 5, 20, COLOR_SEARCH_TEXT);
+        DessinerTextePerso(bufferTexte, x + 10, y + 5, 20, COLOR_SEARCH_TEXT);
     } else {
-        DrawText("Rechercher...", x + 10, y + 5, 20, COLOR_SEARCH_TEXT);
+        DessinerTextePerso("Rechercher...", x + 10, y + 5, 20, COLOR_SEARCH_TEXT);
     }
 }
 
@@ -559,14 +574,14 @@ int dessinerPageDetails(t_media m, Texture2D affiche, t_catalogue catalogue, Tex
         DrawRectangleLinesEx(rectImage, 2, COLOR_DET_LABEL);
 
         int textX = 380, textY = startY;
-        DrawText(getTitre(m), textX, textY, 40, COLOR_DET_TITLE);
+        DessinerTextePerso(getTitre(m), textX, textY, 40, COLOR_DET_TITLE);
         DrawLine(textX, textY + 50, GetScreenWidth() - 50, textY + 50, COLOR_DET_LINE);
 
         // Affichage des champs
         int ecart = 35;
-        DrawText(TextFormat("Annee : %d", getAnnee(m)), textX, textY + 70, 20, COLOR_DET_VALUE);
-        DrawText(TextFormat("Duree : %d min", getDuree(m)), textX, textY + 70 + ecart, 20, COLOR_DET_VALUE);
-        DrawText(TextFormat("Auteur : %s", getAuteur(m)), textX, textY + 70 + ecart*2, 20, COLOR_DET_VALUE);
+        DessinerTextePerso(TextFormat("Annee : %d", getAnnee(m)), textX, textY + 70, 20, COLOR_DET_VALUE);
+        DessinerTextePerso(TextFormat("Duree : %d min", getDuree(m)), textX, textY + 70 + ecart, 20, COLOR_DET_VALUE);
+        DessinerTextePerso(TextFormat("Auteur : %s", getAuteur(m)), textX, textY + 70 + ecart*2, 20, COLOR_DET_VALUE);
 
         // Bouton Lecture
         if (strcmp(getType(m), "Serie") != 0) {
@@ -577,7 +592,7 @@ int dessinerPageDetails(t_media m, Texture2D affiche, t_catalogue catalogue, Tex
             } else {
                 DrawRectangleRec(btnPlay, COLOR_DET_PLAY_BTN_OFF);
             }
-            DrawText("LECTURE", (int)btnPlay.x + 35, (int)btnPlay.y + 15, 25, WHITE);
+            DessinerTextePerso("LECTURE", (int)btnPlay.x + 35, (int)btnPlay.y + 15, 25, WHITE);
         }
 
         // --- SECTION SUGGESTIONS ---
@@ -585,7 +600,7 @@ int dessinerPageDetails(t_media m, Texture2D affiche, t_catalogue catalogue, Tex
         DrawLine(50, zoneY - 20, GetScreenWidth() - 50, zoneY - 20, COLOR_DET_LINE);
 
         if (nbSugg > 0) {
-            DrawText("DU MEME AUTEUR :", 50, zoneY, 20, COLOR_DET_LABEL);
+            DessinerTextePerso("DU MEME AUTEUR :", 50, zoneY, 20, COLOR_DET_LABEL);
             for (int i = 0; i < nbSugg; i++) {
                 float posX = 50 + (i * 180), posY = (float)zoneY + 40;
                 int idxTex = -1;
@@ -601,7 +616,7 @@ int dessinerPageDetails(t_media m, Texture2D affiche, t_catalogue catalogue, Tex
                 }
             }
         } else if (nbEpi > 0) {
-            DrawText("EPISODES :", 50, zoneY, 20, COLOR_DET_LABEL);
+            DessinerTextePerso("EPISODES :", 50, zoneY, 20, COLOR_DET_LABEL);
             for (int i = 0; i < nbEpi; i++) {
                 float posX = 50 + ((i % 5) * 180);
                 float posY = (float)zoneY + 40 + ((i / 5) * 280);
@@ -693,7 +708,7 @@ void animLogoStart(void) {
             DrawRectangle(logoPositionX, logoPositionY + 240, bottomSideRecWidth, 16, Fade(BLACK, alpha));
 
             DrawRectangle(GetScreenWidth()/2 - 112, GetScreenHeight()/2 - 112, 224, 224, Fade(RAYWHITE, alpha));
-            DrawText(TextSubtext("NounaFlix", 0, lettersCount), GetScreenWidth()/2 - 50, 
+            DessinerTextePerso(TextSubtext("NounaFlix", 0, lettersCount), GetScreenWidth()/2 - 50, 
                      GetScreenHeight()/2 + 70, 30, Fade(RED, alpha));
         }
         EndDrawing();
