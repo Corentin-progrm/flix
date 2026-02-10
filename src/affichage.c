@@ -367,10 +367,17 @@ void libererTexturesCatalogue(void) {
    ============================================================================ */
 
 void dessinerEnTete(void) {
-    Rectangle rectLogo = { 25, 25, 50, 50 };
+
+    int largeurSection = (5 * CARTE_LARGEUR) + (4 * 20); 
+    
+    int startX = (GetScreenWidth() - largeurSection) / 2;
+
+    if (startX < 20) startX = 20;
+
+    Rectangle rectLogo = { (float)startX, 25, 50, 50 };
     DrawRectangleLinesEx(rectLogo, 3, COLOR_HEADER_LINE);
-    DessinerTextePerso("nF", 45, 50, 20, COLOR_ACCENT);
-    DessinerTextePerso("NounaFlix", 100, 40, 40, COLOR_ACCENT);
+    DessinerTextePerso("nF", startX + 20, 50, 20, COLOR_ACCENT);
+    DessinerTextePerso("NounaFlix", startX + 75, 40, 40, COLOR_ACCENT);
 }
 
 int dessinerBarreCategories(void) {
