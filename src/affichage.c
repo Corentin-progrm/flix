@@ -437,9 +437,14 @@ int dessinerCarteMedia(Rectangle rect, t_media m, Texture2D miniature) {
 
     // 1. On détermine quelle chaîne on veut afficher
     if (strcmp(getType(m), "Episode") == 0) {
-        texteSource = getEpisode(m); // Utilise "S01E01" par exemple
+        texteSource = getEpisode(m);            // Utilise "S01E01" par exemple
+        snprintf(sousTitreAffichage, sizeof(sousTitreAffichage), "Saison %d", getSaison(m)); // Utilise "S1" par exemple
+    } else if (strcmp(getType(m), "Serie") == 0) {
+        texteSource = getTitre(m);              // Utilise "Inception"
+        snprintf(sousTitreAffichage, sizeof(sousTitreAffichage), "Saison %d", getSaison(m)); // Utilise "S1" par exemple
     } else {
-        texteSource = getTitre(m);   // Utilise "Inception"
+        texteSource = getTitre(m);              // Utilise "Inception"
+        snprintf(sousTitreAffichage, sizeof(sousTitreAffichage), "%d", getAnnee(m)); // Utilise "2010"
     }
 
     // 2. On vérifie la longueur réelle avant de couper
@@ -455,7 +460,7 @@ int dessinerCarteMedia(Rectangle rect, t_media m, Texture2D miniature) {
 
     // 3. On affiche le résultat
     DessinerTextePerso(titreAffichage, (int)rect.x + 8, (int)rect.y + (int)rect.height - 40, 20, COLOR_CARD_TITLE);
-    DessinerTextePerso(TextFormat("%d", getAnnee(m)), (int)rect.x + 8, (int)rect.y + (int)rect.height - 20, 10, COLOR_CARD_YEAR);
+    DessinerTextePerso(sousTitreAffichage, (int)rect.x + 8, (int)rect.y + (int)rect.height - 20, 10, COLOR_CARD_YEAR);
 
     DrawRectangleLinesEx(rect, 3, couleurBordure); // Épaisseur fixe à 3
 
