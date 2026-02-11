@@ -83,17 +83,17 @@ t_catalogue chargerBaseDeDonnees(void) {
     // Lecture ligne par ligne du fichier
     while (compteur < max_taille && fgets(ligne, sizeof(ligne), fichier)) {
         
-        char tCode[50], tType[50], tTitre[100], tAuteur[100], tParent[100], tEpisode[50];
+        char tCode[50], tType[50], tTitre[100], tAuteur[100], tParent[100], tEpisode[50], tTags[100];
         int tAnnee; 
         int tDuree;
         int tSaison;
 
         // Parsing (Découpage de la ligne)
-        int n = sscanf(ligne, "%[^;];%[^;];%[^;];%d;%d;%[^;];%[^;];%[^;];%d", 
-                       tCode, tType, tTitre, &tAnnee, &tDuree, tAuteur, tParent, tEpisode, &tSaison);
+        int n = sscanf(ligne, "%[^;];%[^;];%[^;];%d;%d;%[^;];%[^;];%[^;];%d;%[^\n]", 
+                       tCode, tType, tTitre, &tAnnee, &tDuree, tAuteur, tParent, tEpisode, &tSaison, tTags);
 
-        // Si la ligne est bien formée (9 éléments trouvés)
-        if (n == 9) {
+        // Si la ligne est bien formée (10 éléments trouvés)
+        if (n == 10) {
             // Construction du chemin de la vidéo
             sprintf(cheminVideo, CHEMIN_MEDIAS, tCode);
             
@@ -111,6 +111,7 @@ t_catalogue chargerBaseDeDonnees(void) {
                 setParent(m, tParent);
                 setEpisode(m, tEpisode);
                 setSaison(m, tSaison);
+                setTags(m, tTags);
                 
                 // On ajoute au catalogue
                 setMediaCatalogue(catalogue, m, compteur);

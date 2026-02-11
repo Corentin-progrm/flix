@@ -38,6 +38,7 @@ char* getAuteur(t_media media);     // Ex: "Christopher Nolan"
 char* getParent(t_media media);     // Ex: "Serie mere"
 char* getEpisode(t_media media);    // Ex: "EP001"
 int getSaison(t_media media);      // Ex: 1 (saison 1)
+char* getTags(t_media media);      // Ex: "Action, Sci-Fi"
 
 int getNbMedia(t_catalogue catalogue);    // Nombre de medias dans le catalogue
 
@@ -53,6 +54,7 @@ void setAuteur(t_media media, char* nouvelAuteur);
 void setParent(t_media media, char* nouveauParent);
 void setEpisode(t_media media, char* nouvelEpisode);
 void setSaison(t_media media, int nouvelleSaison);
+void setTags(t_media media, char* nouveauxTags);
 
 void setNbMedia(t_catalogue catalogue, int nouveauNbMedia);
 void setMediaCatalogue(t_catalogue catalogue, t_media media, int index);    // Stocke un media à l'index donné

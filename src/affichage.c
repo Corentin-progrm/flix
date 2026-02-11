@@ -102,28 +102,32 @@ static void redimensionTextureMedia(Texture2D texture, Rectangle destRect) {
     EndScissorMode();
 }
 
-// Dessine un bouton carré style "Tuile"
-static int dessinerCarreMenu(Rectangle rect, char* texte, Color couleurPrincipale) {
+
+static int dessinerCarreMenu(Rectangle rect, char* texte, Color couleurBase) {
     int estClique = 0;
     Vector2 souris = GetMousePosition();
     
-    Color couleurFond = Fade(couleurPrincipale, 0.3f); 
+    Color couleurActuelle = couleurBase;
     
+    // Si la souris est dessus, on change le style
     if (CheckCollisionPointRec(souris, rect)) {
-        couleurFond = Fade(couleurPrincipale, 0.6f);
+        couleurActuelle = BLACK; 
+        
         SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
         if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) estClique = 1;
     }
 
-    DrawRectangleRec(rect, couleurFond);               
-    DrawRectangleLinesEx(rect, 4, couleurPrincipale);
+    DrawRectangleRec(rect, couleurActuelle);
+    
+    DrawRectangleLinesEx(rect, 2, Fade(WHITE, 0.2f));
 
-    int taillePolice = 20;
+    int taillePolice = 20; // Tu peux ajuster ici ou passer en paramètre
     int largeurTexte = MeasureText(texte, taillePolice);
-    int posX = (int)(rect.x + rect.width - largeurTexte - 10);
-    int posY = (int)(rect.y + rect.height - taillePolice - 10);
+    
+    int posX = (int)(rect.x + (rect.width - largeurTexte) / 2);
+    int posY = (int)(rect.y + (rect.height - taillePolice) / 2);
 
-    DessinerTextePerso(texte, posX, posY, taillePolice, COLOR_BTN_TXT);
+    DessinerTextePerso(texte, posX, posY, taillePolice, WHITE);
 
     return estClique;
 }
@@ -303,8 +307,10 @@ void initInterface(int largeur, int hauteur, char* titre) {
 
     if (FileExists("assets/logo.png")) {
         Image icone = LoadImage("assets/logo.png");
-        SetWindowIcon(icone); 
+        SetWindowIcon(icone);
         UnloadImage(icone);
+    } else {
+        printf("[INFO] Fichier d'icône manquant\n");
     }
 
     SetTargetFPS(60);
@@ -377,7 +383,7 @@ void dessinerEnTete(void) {
     Rectangle rectLogo = { (float)startX, 25, 50, 50 };
     DrawRectangleLinesEx(rectLogo, 3, COLOR_HEADER_LINE);
     DessinerTextePerso("nF", startX + 20, 50, 20, COLOR_ACCENT);
-    DessinerTextePerso("NounaFlix", startX + 75, 40, 40, COLOR_ACCENT);
+    DessinerTextePerso("CoreFlix", startX + 75, 40, 40, COLOR_ACCENT);
 }
 
 int dessinerBarreCategories(void) {
@@ -593,12 +599,19 @@ int dessinerPageDetails(t_media m, Texture2D affiche, t_catalogue catalogue, Tex
         // Affichage des champs
         int ecart = 35;
         DessinerTextePerso(TextFormat("Annee : %d", getAnnee(m)), textX, textY + 70, 20, COLOR_DET_VALUE);
-        DessinerTextePerso(TextFormat("Duree : %d min", getDuree(m)), textX, textY + 70 + ecart, 20, COLOR_DET_VALUE);
-        DessinerTextePerso(TextFormat("Auteur : %s", getAuteur(m)), textX, textY + 70 + ecart*2, 20, COLOR_DET_VALUE);
+        if (strcmp(getType(m), "Serie") == 0) {
+            DessinerTextePerso(TextFormat("Episodes : %d", nbEpi), textX, textY + 70 + ecart, 20, COLOR_DET_VALUE);
+        } else {
+            DessinerTextePerso(TextFormat("Duree : %d min", getDuree(m)), textX, textY + 70 + ecart, 20, COLOR_DET_VALUE);
+        }
+        DessinerTextePerso(TextFormat("Realisateur : %s", getAuteur(m)), textX, textY + 70 + ecart*2, 20, COLOR_DET_VALUE);
+        DessinerTextePerso(TextFormat("Tags : %s", getTags(m)), textX, textY + 70 + ecart*3, 20, COLOR_DET_VALUE);
+        
+        
 
         // Bouton Lecture
         if (strcmp(getType(m), "Serie") != 0) {
-            Rectangle btnPlay = { (float)textX, (float)textY + 180, 200, 60 };
+            Rectangle btnPlay = { (float)textX, (float)textY + 220, 200, 60 };
             if (CheckCollisionPointRec(GetMousePosition(), btnPlay)) {
                 DrawRectangleRec(btnPlay, COLOR_DET_PLAY_BTN_ON);
                 if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) action = 2;

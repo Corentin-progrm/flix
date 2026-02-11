@@ -28,6 +28,7 @@ struct media{
     char *parent;
     char *episode;
     int saison;
+    char *tags;
 };
 
 struct catalogue {
@@ -57,6 +58,7 @@ t_media creer_media(void) {
         media->parent = NULL;
         media->episode = NULL;
         media->saison = 0;
+        media->tags = NULL;
     }
     
     return media;
@@ -227,6 +229,20 @@ int getSaison(t_media media) {
 }
 
 /**
+ * @fonction getTags()
+ * @brief Retourne les tags du media.
+ * @param  media    Le media dont on veut obtenir les tags.
+ * @return char*    Les tags du media.
+ */
+char* getTags(t_media media) {
+    if (media) {
+        return media->tags;
+    } else {
+        return NULL;
+    }
+}
+
+/**
  * @fonction get_media_catalogue()
  * @brief Retourne le media à l'index donné dans le catalogue.
  * @param  catalogue    Le catalogue contenant les medias.
@@ -354,6 +370,19 @@ void setEpisode(t_media media, char* nouvelEpisode) {
  */
 void setSaison(t_media media, int nouvelleSaison) {
     media->saison = nouvelleSaison;
+}
+
+/**
+ * @fonction setTags()
+ * @brief Définit les tags du media.
+ * @param  media          Le media dont on veut définir les tags.
+ * @param  nouveauxTags   Les nouveaux tags à définir.
+ */
+void setTags(t_media media, char* nouveauxTags) {
+    if (media->tags != NULL) {
+        free(media->tags);
+    }
+    media->tags = strdup(nouveauxTags);
 }
 
 /**
