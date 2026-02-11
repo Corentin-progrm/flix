@@ -10,12 +10,12 @@ MOV009;Film;Titanic;1997;195;J. Cameron;NULL;NULL;0;sitcom,humour
 MOV010;Film;Avatar;2009;162;J. Cameron;NULL;NULL;0;sitcom,humour
 MOV011;Film;InceptionInception;2010;148;C. Nolan;NULL;NULL;0;sitcom,humour
 MOV012;Film;Le Parrain;1972;175;F. Coppola;NULL;NULL;0;sitcom,humour
-MOV013;Film;Pulp Fiction;1994;154;Q. Tarantino;NULL;NULL;0;sitcom,humour
+MOV013;Documentaire;Pulp Fiction;1994;154;Q. Tarantino;NULL;NULL;0;sitcom,humour
 MOV014;Film;Interstellar;2014;169;C. Nolan;NULL;NULL;0;sitcom,humour
 MOV015;Film;Parasite;2019;132;B. Joon-ho;NULL;NULL;0;sitcom,humour
 MOV016;Film;Matrix;1999;136;L. Wachowski;NULL;NULL;0;sitcom,humour
 MOV017;Film;Forrest Gump;1994;142;R. Zemeckis;NULL;NULL;0;sitcom,humour
-MOV018;Film;Gladiator;2000;155;R. Scott;NULL;NULL;0;sitcom,humour
+MOV018;Documentaire;Gladiator;2000;155;R. Scott;NULL;NULL;0;sitcom,humour
 MOV019;Film;Titanic;1997;195;J. Cameron;NULL;NULL;0;sitcom,humour
 MOV020;Film;Avatar;2009;162;J. Cameron;NULL;NULL;0;sitcom,humour
 SER001;Serie;Brooklyn Nine-Nine;2013;0;Dan Goor;NULL;NULL;1;sitcom,humour

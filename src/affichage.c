@@ -31,7 +31,7 @@ const Color COLOR_BTN_TXT           = { 252, 245, 238, 255 };   // Texte boutons
 const Color COLOR_CAT_AJOUTER       = { 255, 230, 230, 255 };     // Cadre Menu Ajouter
 const Color COLOR_CAT_FILM          = { 255, 196, 196, 255 };     // Cadre Menu Film
 const Color COLOR_CAT_SERIE         = { 238, 105, 131, 255 };     // Cadre Menu Serie
-const Color COLOR_CAT_AUTRE         = { 188, 21, 54, 255 };     // Cadre Menu Autre
+const Color COLOR_CAT_DOCU          = { 188, 21, 54, 255 };     // Cadre Menu documentaires
 const Color COLOR_CAT_FAVORI        = { 133, 14, 53, 255 };     // Cadre Menu Favoris
 
 // Cartes Média
@@ -400,7 +400,7 @@ int dessinerBarreCategories(void) {
 
     // Utilisation des constantes de catégorie
     if (dessinerCarreMenu((Rectangle){(float)x, (float)y, (float)largeur, (float)hauteur}, 
-        "Ajouter", COLOR_CAT_AJOUTER)) choix = 0;
+        "Ajouter", COLOR_CAT_AJOUTER)) choix = 1;
     
     if (dessinerCarreMenu((Rectangle){(float)(x + pas), (float)y, (float)largeur, (float)hauteur}, 
         "Film", COLOR_CAT_FILM)) choix = 2;
@@ -409,7 +409,7 @@ int dessinerBarreCategories(void) {
         "Serie", COLOR_CAT_SERIE)) choix = 3;
     
     if (dessinerCarreMenu((Rectangle){(float)(x + pas * 3), (float)y, (float)largeur, (float)hauteur}, 
-        "Autre", COLOR_CAT_AUTRE)) choix = 4;
+        "Docs", COLOR_CAT_DOCU)) choix = 4;
     
     if (dessinerCarreMenu((Rectangle){(float)(x + pas * 4), (float)y, (float)largeur, (float)hauteur}, 
         "Favoris", COLOR_CAT_FAVORI)) choix = 5;

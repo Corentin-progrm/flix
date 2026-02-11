@@ -151,10 +151,9 @@ int mediaCorrespondCategorie(t_media m, int indexMenu) {
     else if (indexMenu == 3) {
         if (strcmp(typeMedia, "Serie") == 0) return 1;
     }
-    // 4 = "Autre"
+    // 4 = "Documentaire"
     else if (indexMenu == 4) {
-        // Affiche si ce n'est ni Film ni Série, ou si c'est explicitement "Autre"
-        if (strcmp(typeMedia, "Film") != 0 && strcmp(typeMedia, "Serie") != 0) return 1;
+        if (strcmp(typeMedia, "Documentaire") == 0) return 1;
     }
 
     return 0; // Ne correspond pas
