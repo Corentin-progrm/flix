@@ -57,6 +57,8 @@ int dessinerPageDetails(t_media m, Texture2D affiche, t_catalogue catalogue, Tex
 // Permet de dessiner du texte avec la police personnalisée et une couleur spécifique
 void DessinerTextePerso(const char* texte, int x, int y, int taille, Color couleur);
 
+int dessinerPageAjout(void);
+
 // --- ANIMATION ---
 void animLogoStart(void);
 

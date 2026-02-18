@@ -39,3 +39,4 @@ EP017;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP017;
 EP018;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP018;1;sitcom,humour
 EP019;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP019;1;sitcom,humour
 EP020;Episode;Brooklyn Nine-Nine 1;2013;20;Michael Schur, Dan Goor;SER001;EP020;1;sitcom,humour
+M1771428997;Serie;logique ;2026;0;moi je sais pas ;NULL;NULL;0;Nouveau

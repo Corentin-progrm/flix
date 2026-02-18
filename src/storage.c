@@ -11,6 +11,7 @@
 /* LIBRARY ================================================================ */
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "storage.h"
 
 /* CONSTANTES ============================================================= */
@@ -138,11 +139,15 @@ int mediaCorrespondCategorie(t_media m, int indexMenu) {
     // Si aucun filtre n'est actif (-1) ou si on clique sur Search(1) ou Ajouter(0),
     // on décide d'afficher TOUT par défaut (ou on gère autrement).
     // Ici, disons que si on n'a pas cliqué sur une catégorie précise, on montre tout.
-    if (indexMenu == -1 || indexMenu == 0 || indexMenu == 1) {
+    if (indexMenu == -1 || indexMenu == 0) {
         if (strcmp(typeMedia, "Episode") != 0) return 1;
     }
 
-    // MAPPING DES BOUTONS (Selon l'ordre dans ta fonction dessinerBarreCategories)
+    // 1 = "Ajout"
+    if (indexMenu == 1) {
+        return 1;
+    }
+
     // 2 = "Film"
     if (indexMenu == 2) {
         if (strcmp(typeMedia, "Film") == 0) return 1;
@@ -274,4 +279,34 @@ void enregistrerDansHistorique(char* code) {
         }
         fclose(f);
     }
+}
+
+
+void ajouterMediaBDD(char* titre, char* type, char* auteur) {
+    FILE* f = fopen(CHEMIN_BDD, "a"); // Ajout en fin de fichier
+    if (f == NULL) {
+        printf("[ERREUR] Impossible d'ouvrir le fichier de base de donnees.\n");
+        return;
+    }
+
+    // Génération d'un ID unique basé sur l'heure (timestamp)
+    int id = (int)time(NULL); 
+    char code[20];
+    sprintf(code, "M%d", id);
+
+    // Valeurs par défaut pour les champs qu'on ne demande pas encore
+    int annee = 2026;
+    int duree = 0;
+    char* parent = "NULL";
+    char* episode = "NULL";
+    int saison = 0;
+    char* tags = "Nouveau";
+
+    // ÉCRITURE AU FORMAT STRICT :
+    // Code;Type;Titre;Annee;Duree;Auteur;Parent;Episode;Saison;Tags
+    fprintf(f, "\n%s;%s;%s;%d;%d;%s;%s;%s;%d;%s", 
+            code, type, titre, annee, duree, auteur, parent, episode, saison, tags);
+
+    fclose(f);
+    printf("[SUCCES] Media ajoute : %s (%s) par %s\n", titre, type, auteur);
 }

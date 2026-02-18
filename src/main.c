@@ -16,6 +16,7 @@
 // États de l'application
 #define ETAT_ACCUEIL 0
 #define ETAT_DETAILS 1
+#define ETAT_AJOUT   2
 
 // Configuration
 #define LARGEUR_FENETRE 1024
@@ -86,6 +87,9 @@ int main(void)
             dessinerEnTete();
 
             int clicMenu = dessinerBarreCategories();
+            if (clicMenu == 1) {
+                etatApp = ETAT_AJOUT; 
+            }
             if (clicMenu != -1 && clicMenu != 1) {
                 filtreSelectionne = (filtreSelectionne == clicMenu) ? -1 : clicMenu;
             }
@@ -105,6 +109,20 @@ int main(void)
                 if (action == 1) etatApp = ETAT_ACCUEIL;
                 if (action == 2) lancerVideo(m);
 
+            }
+        }
+        else if (etatApp == ETAT_AJOUT) {
+            
+            // On appelle la fonction graphique. Elle renvoie 1 quand c'est fini.
+            if (dessinerPageAjout() == 1) {
+                
+                // 1. Retour à l'accueil
+                etatApp = ETAT_ACCUEIL;
+                
+                // 2. Rechargement des données pour voir le nouveau film
+                libererTexturesCatalogue();      // Nettoyer images
+                catalogue = chargerBaseDeDonnees(); // Relire le fichier texte modifie
+                chargerTexturesCatalogue(catalogue); // Recharger images
             }
         }
 

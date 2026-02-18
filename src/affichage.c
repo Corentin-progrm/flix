@@ -740,3 +740,120 @@ void animLogoStart(void) {
         EndDrawing();
     }
 }
+
+
+
+
+
+// --- VARIABLES POUR LA PAGE AJOUT (A mettre en haut de affichage.c) ---
+static char bufferTitre[64] = "\0";   // Stocke le titre en cours de frappe
+static char bufferAuteur[64] = "\0";  // Stocke l'auteur en cours de frappe
+static int typeSelectionne = 0;       // 0=Film, 1=Serie, 2=Docu
+static int champActif = 0;            // 0=Aucun, 1=Titre, 2=Auteur
+
+// Helper pour gérer la saisie clavier Raylib
+void gererSaisieTexte(char* buffer, int maxLen) {
+    int key = GetCharPressed();
+    while (key > 0) {
+        if ((key >= 32) && (key <= 125) && (strlen(buffer) < maxLen)) {
+            int len = strlen(buffer);
+            buffer[len] = (char)key;
+            buffer[len + 1] = '\0';
+        }
+        key = GetCharPressed();
+    }
+    if (IsKeyPressed(KEY_BACKSPACE)) {
+        int len = strlen(buffer);
+        if (len > 0) buffer[len - 1] = '\0';
+    }
+}
+
+int dessinerPageAjout(void) {
+    int action = 0; // 0 = Reste sur la page, 1 = Retour/Fini
+
+    // 1. Fond et En-tête
+    DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), COLOR_DET_BG);
+    dessinerEnTete(); // Ton logo nF
+    
+    // Titre de la page
+    DessinerTextePerso("AJOUTER UN MEDIA", 50, 120, 30, COLOR_ACCENT);
+
+    int startX = 100;
+    int startY = 200;
+
+    // --- CHAMP 1 : TITRE ---
+    DessinerTextePerso("Titre du media :", startX, startY, 20, COLOR_DET_LABEL);
+    Rectangle rectTitre = { (float)startX, (float)startY + 30, 400, 40 };
+    
+    // Activation du champ au clic
+    if (CheckCollisionPointRec(GetMousePosition(), rectTitre) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        champActif = 1;
+    }
+    
+    // Dessin du champ
+    DrawRectangleRec(rectTitre, (champActif == 1) ? WHITE : LIGHTGRAY);
+    DrawRectangleLinesEx(rectTitre, 2, (champActif == 1) ? COLOR_ACCENT : GRAY);
+    DessinerTextePerso(bufferTitre, startX + 10, startY + 35, 20, BLACK);
+    
+    // Saisie
+    if (champActif == 1) gererSaisieTexte(bufferTitre, 60);
+
+
+    // --- CHAMP 2 : TYPE (Boutons Film/Serie/Docu) ---
+    int yType = startY + 100;
+    DessinerTextePerso("Type de media :", startX, yType, 20, COLOR_DET_LABEL);
+    
+    // On utilise ta fonction dessinerCarreMenu pour garder le style
+    // On grise les boutons non sélectionnés
+    Color cFilm = (typeSelectionne == 0) ? COLOR_CAT_FILM : Fade(GRAY, 0.3f);
+    Color cSerie = (typeSelectionne == 1) ? COLOR_CAT_SERIE : Fade(GRAY, 0.3f);
+    Color cDocu = (typeSelectionne == 2) ? COLOR_CAT_DOCU : Fade(GRAY, 0.3f);
+
+    if (dessinerCarreMenu((Rectangle){(float)startX, (float)yType + 30, 100, 40}, "FILM", cFilm)) typeSelectionne = 0;
+    if (dessinerCarreMenu((Rectangle){(float)startX + 120, (float)yType + 30, 100, 40}, "SERIE", cSerie)) typeSelectionne = 1;
+    if (dessinerCarreMenu((Rectangle){(float)startX + 240, (float)yType + 30, 120, 40}, "DOCU", cDocu)) typeSelectionne = 2;
+
+
+    // --- CHAMP 3 : REALISATEUR ---
+    int yAuteur = yType + 100;
+    DessinerTextePerso("Realisateur / Auteur :", startX, yAuteur, 20, COLOR_DET_LABEL);
+    Rectangle rectAuteur = { (float)startX, (float)yAuteur + 30, 400, 40 };
+
+    if (CheckCollisionPointRec(GetMousePosition(), rectAuteur) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        champActif = 2;
+    }
+
+    DrawRectangleRec(rectAuteur, (champActif == 2) ? WHITE : LIGHTGRAY);
+    DrawRectangleLinesEx(rectAuteur, 2, (champActif == 2) ? COLOR_ACCENT : GRAY);
+    DessinerTextePerso(bufferAuteur, startX + 10, yAuteur + 35, 20, BLACK);
+
+    if (champActif == 2) gererSaisieTexte(bufferAuteur, 60);
+
+
+    // --- BOUTONS VALIDER / ANNULER ---
+    int yBtn = GetScreenHeight() - 100;
+
+    // VALIDER (Vert)
+    if (dessinerCarreMenu((Rectangle){(float)GetScreenWidth() - 250, (float)yBtn, 200, 50}, "VALIDER", GREEN)) {
+        if (strlen(bufferTitre) > 0) { // On vérifie qu'il y a au moins un titre
+            char* strType = "Film";
+            if (typeSelectionne == 1) strType = "Serie";
+            if (typeSelectionne == 2) strType = "Documentaire";
+
+            // Appel de la fonction technique
+            ajouterMediaBDD(bufferTitre, strType, bufferAuteur);
+
+            // Reset des champs
+            bufferTitre[0] = '\0';
+            bufferAuteur[0] = '\0';
+            action = 1; // On signale qu'on veut quitter la page
+        }
+    }
+
+    // ANNULER (Gris/Rouge)
+    if (dessinerCarreMenu((Rectangle){20, (float)yBtn, 150, 50}, "ANNULER", COLOR_CAT_RETOUR)) {
+        action = 1; 
+    }
+
+    return action;
+}

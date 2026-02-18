@@ -49,4 +49,7 @@ int recupererEpisodesSerie(t_catalogue catalogue, char* codeParent, t_media epis
 // Enregistre un code média dans l'historique des visionnages
 void enregistrerDansHistorique(char* code);
 
+// Fonction pour ajouter un média à la fin du fichier database
+void ajouterMediaBDD(char* titre, char* type, char* auteur);
+
 #endif
